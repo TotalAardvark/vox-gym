@@ -33,8 +33,6 @@ export class MediaSessionController {
     this.currentTrackIndex = 0;
     this.isPlaying = false;
     this.isMuted = false;
-    this.audioCtx = null;
-    this.beatInterval = null;
     this.listeners = [];
   }
 
@@ -101,15 +99,12 @@ export class MediaSessionController {
 
   play() {
     this.isPlaying = true;
-    this.ensureAudioEngine();
-    this.startBeatLoop();
     this.updateMediaMetadata();
     this.notifyState();
   }
 
   pause() {
     this.isPlaying = false;
-    this.stopBeatLoop();
     this.updateMediaMetadata();
     this.notifyState();
   }
@@ -137,66 +132,6 @@ export class MediaSessionController {
     this.currentTrackIndex = (this.currentTrackIndex - 1 + WORKOUT_TRACKS.length) % WORKOUT_TRACKS.length;
     this.updateMediaMetadata();
     this.notifyState();
-  }
-
-  // --- Background Synth Rhythm Generator ---
-  ensureAudioEngine() {
-    if (!this.audioCtx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) {
-        this.audioCtx = new AudioCtx();
-      }
-    }
-    if (this.audioCtx && this.audioCtx.state === "suspended") {
-      this.audioCtx.resume();
-    }
-  }
-
-  startBeatLoop() {
-    this.stopBeatLoop();
-    const track = WORKOUT_TRACKS[this.currentTrackIndex];
-    const intervalMs = (60 / track.bpm) * 1000;
-    let step = 0;
-
-    this.beatInterval = setInterval(() => {
-      if (!this.isPlaying || this.isMuted || !this.audioCtx) return;
-
-      const now = this.audioCtx.currentTime;
-      // Synthesize rhythmic kick & hi-hat pattern
-      if (step % 2 === 0) {
-        // Kick
-        const osc = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc.frequency.setValueAtTime(120, now);
-        osc.frequency.exponentialRampToValueAtTime(35, now + 0.1);
-        gain.gain.setValueAtTime(0.25, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-        osc.connect(gain);
-        gain.connect(this.audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.12);
-      } else {
-        // Snare / Hi-hat pulse
-        const osc = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(400, now);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-        osc.connect(gain);
-        gain.connect(this.audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.05);
-      }
-      step = (step + 1) % 4;
-    }, intervalMs);
-  }
-
-  stopBeatLoop() {
-    if (this.beatInterval) {
-      clearInterval(this.beatInterval);
-      this.beatInterval = null;
-    }
   }
 }
 
