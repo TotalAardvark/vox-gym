@@ -59,13 +59,14 @@ body {
 /* Main scrollable body area between Header and Media Footer */
 .main-viewport {
   flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 4px 4px 12px 4px;
+  padding: 8px 4px 12px 4px;
 }
 
 /* Custom subtle scrollbar */

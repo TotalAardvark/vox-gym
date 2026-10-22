@@ -3,7 +3,7 @@
  * Provides offline caching for seamless gym workout tracking without active cell connection.
  */
 
-const CACHE_NAME = "vox-gym-cache-v2";
+const CACHE_NAME = "vox-gym-cache-v3";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",

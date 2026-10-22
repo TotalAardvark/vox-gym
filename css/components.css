@@ -139,6 +139,20 @@
 }
 
 /* ==========================================================================
+   Fixed Top Area (Last Logged Set Feedback + Push-To-Talk)
+   ========================================================================== */
+.fixed-top-section {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 4px 8px 4px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-primary);
+  z-index: 5;
+}
+
+/* ==========================================================================
    2. Immediate Exercise Feedback Card (PRD 3.4)
    ========================================================================== */
 .feedback-card {
@@ -600,17 +614,18 @@
 .activity-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
-.activity-row {
+/* Grouped Exercise Card */
+.exercise-group-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   animation: slideInUp 0.25s ease;
 }
 
@@ -619,45 +634,119 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.activity-col-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.activity-set-meta {
+.group-card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  padding: 12px 14px 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.set-num-badge {
-  font-size: 0.68rem;
+.group-card-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.group-card-title {
+  font-size: 0.96rem;
   font-weight: 800;
-  color: var(--accent-cyan);
-  background: rgba(0, 229, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.activity-ex-title {
-  font-size: 0.92rem;
-  font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.2;
 }
 
-.activity-time {
+.group-card-subtitle {
   font-size: 0.7rem;
-  font-family: var(--font-family-mono);
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.activity-set-metrics {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+.group-card-meta {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.group-card-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  background: rgba(0, 245, 155, 0.1);
+  border: 1px solid rgba(0, 245, 155, 0.2);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.group-sets-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-set-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background-color 0.15s ease;
+}
+
+.group-set-row:last-child {
+  border-bottom: none;
+}
+
+.group-set-row:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.group-set-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.group-set-index {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  background: rgba(0, 229, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex: 0 0 auto;
+}
+
+.group-set-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.group-set-metrics {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.group-set-metrics strong {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.group-set-time {
+  font-size: 0.68rem;
+  font-family: var(--font-family-mono);
+  color: var(--text-muted);
 }
 
 .badge-tag {
@@ -678,16 +767,22 @@
 }
 
 .btn-delete-set {
-  min-width: 44px;
-  min-height: 44px;
-  width: 44px;
-  height: 44px;
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-full);
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  flex: 0 0 auto;
 }
 
-.btn-delete-set:hover {
+.btn-delete-set:hover, .btn-delete-set:active {
   color: var(--accent-red);
+  background-color: rgba(255, 71, 87, 0.12);
 }
 
 .activity-empty-state {

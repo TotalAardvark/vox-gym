@@ -241,44 +241,91 @@ export class UIController {
       this.elements.activityEmptyState.style.display = "none";
     }
 
-    // Render sets in reverse chronological order (newest on top)
-    const reversed = [...sets].reverse();
-    this.elements.activityList.innerHTML = reversed.map((set, idx) => {
-      const originalSetNum = sets.length - idx;
-      let detailsHtml = "";
-
-      if (set.type === "drop_set" && Array.isArray(set.drops)) {
-        const dropSeq = set.drops.map(d => `${d.weight}${set.unit || unit} × ${d.reps}`).join(" → ");
-        detailsHtml = `<span class="badge-tag drop-tag">DROP SET</span> <span class="set-details-seq">${dropSeq}</span>`;
-      } else if (set.type === "bodyweight" || set.isBodyweight) {
-        const added = set.addedWeight > 0 ? `+${set.addedWeight} ${set.unit || unit}` : "BW";
-        detailsHtml = `<span class="badge-tag bw-tag">BODYWEIGHT</span> <strong>${added}</strong> × <strong>${set.reps} reps</strong>`;
-      } else if (set.type === "time") {
-        detailsHtml = `<strong>${set.duration}s</strong> duration`;
-      } else if (set.type === "distance_time") {
-        detailsHtml = `<strong>${set.distance} ${set.distUnit}</strong> in <strong>${set.duration} ${set.durationUnit}</strong>`;
-      } else {
-        detailsHtml = `<strong>${set.weight} ${set.unit || unit}</strong> × <strong>${set.reps} reps</strong>`;
+    // Group sets by exercise name while preserving chronological sequence
+    const exerciseMap = new Map();
+    sets.forEach((set) => {
+      const exName = set.exercise || "Unknown Exercise";
+      if (!exerciseMap.has(exName)) {
+        exerciseMap.set(exName, {
+          exercise: exName,
+          sets: [],
+          lastTimestamp: new Date(set.timestamp || 0).getTime()
+        });
       }
+      const group = exerciseMap.get(exName);
+      group.sets.push(set);
+      group.lastTimestamp = Math.max(group.lastTimestamp, new Date(set.timestamp || 0).getTime());
+    });
+
+    // Sort exercise groups with most recently updated exercise first
+    const sortedGroups = Array.from(exerciseMap.values()).sort((a, b) => b.lastTimestamp - a.lastTimestamp);
+
+    this.elements.activityList.innerHTML = sortedGroups.map(group => {
+      const dbEntry = EXERCISE_DATABASE.find(e => e.name === group.exercise);
+      const muscle = dbEntry ? dbEntry.muscle : "Strength";
+
+      let groupVol = 0;
+      group.sets.forEach(s => {
+        const w = s.weight || s.addedWeight || 0;
+        const r = typeof s.reps === "number" ? s.reps : 0;
+        groupVol += w * r;
+      });
+
+      const setCountText = `${group.sets.length} ${group.sets.length === 1 ? "Set" : "Sets"}`;
+      const volText = groupVol > 0 ? ` • ${groupVol.toLocaleString()} ${unit}` : "";
+
+      const setsHtml = group.sets.map((set, setIndex) => {
+        let detailsHtml = "";
+
+        if (set.type === "drop_set" && Array.isArray(set.drops)) {
+          const dropSeq = set.drops.map(d => `${d.weight}${set.unit || unit} × ${d.reps}`).join(" → ");
+          detailsHtml = `<span class="badge-tag drop-tag">DROP</span> <span>${dropSeq}</span>`;
+        } else if (set.type === "bodyweight" || set.isBodyweight) {
+          const added = set.addedWeight > 0 ? `+${set.addedWeight} ${set.unit || unit}` : "BW";
+          detailsHtml = `<span class="badge-tag bw-tag">BODYWEIGHT</span> <strong>${added}</strong> × <strong>${set.reps} reps</strong>`;
+        } else if (set.type === "time") {
+          detailsHtml = `<strong>${set.duration}s</strong> duration`;
+        } else if (set.type === "distance_time") {
+          detailsHtml = `<strong>${set.distance} ${set.distUnit}</strong> in <strong>${set.duration} ${set.durationUnit}</strong>`;
+        } else {
+          detailsHtml = `<strong>${set.weight} ${set.unit || unit}</strong> × <strong>${set.reps} reps</strong>`;
+        }
+
+        return `
+          <div class="group-set-row" data-set-id="${set.id}">
+            <div class="group-set-left">
+              <span class="group-set-index">#${setIndex + 1}</span>
+              <div class="group-set-content">
+                <div class="group-set-metrics">
+                  ${detailsHtml}
+                </div>
+                <div class="group-set-time">${formatTime(set.timestamp)}</div>
+              </div>
+            </div>
+            <button class="btn-delete-set touch-target" data-delete-id="${set.id}" aria-label="Delete set ${setIndex + 1}" title="Delete set">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        `;
+      }).join("");
 
       return `
-        <div class="activity-row" data-set-id="${set.id}">
-          <div class="activity-col-info">
-            <div class="activity-set-meta">
-              <span class="set-num-badge">#${originalSetNum}</span>
-              <span class="activity-ex-title">${set.exercise}</span>
-              <span class="activity-time">${formatTime(set.timestamp)}</span>
+        <div class="exercise-group-card" data-exercise="${group.exercise}">
+          <div class="group-card-header">
+            <div class="group-card-title-wrap">
+              <span class="group-card-title">${group.exercise}</span>
+              <span class="group-card-subtitle">${muscle}</span>
             </div>
-            <div class="activity-set-metrics">
-              ${detailsHtml}
+            <div class="group-card-meta">
+              <span class="group-card-badge">${setCountText}${volText}</span>
             </div>
           </div>
-          <button class="btn-delete-set" data-delete-id="${set.id}" aria-label="Delete set" title="Delete set">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-          </button>
+          <div class="group-sets-list">
+            ${setsHtml}
+          </div>
         </div>
       `;
     }).join("");
@@ -295,6 +342,8 @@ export class UIController {
           const last = storage.getLastLoggedSet();
           if (last) {
             this.updateFeedbackCard(last.exercise);
+          } else {
+            this.renderInitialFeedbackCard();
           }
         }
       });

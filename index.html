@@ -68,9 +68,8 @@
       </div>
     </header>
 
-    <!-- Main Scrollable Workout Viewport -->
-    <main class="main-viewport">
-
+    <!-- Fixed Top Area: Last Logged Set Card & Voice Interaction Zone -->
+    <div class="fixed-top-section">
       <!-- Immediate Exercise Feedback Card (PRD 2.2 #3 & PRD 3.4) -->
       <section id="feedback-card" class="feedback-card" aria-label="Exercise comparative stats">
         <div class="feedback-header-row">
@@ -126,35 +125,11 @@
           <span id="live-transcript-text" class="live-transcript-text">"Listening..."</span>
         </div>
       </section>
+    </div>
 
-      <!-- Quick Voice Simulator & Command Presets -->
-      <section class="presets-section" aria-label="Voice command testing presets">
-        <div class="presets-header">
-          <span class="presets-title">Tap to Test Voice Commands</span>
-          <button id="manual-voice-toggle-btn" class="manual-text-toggle-btn">Type Command</button>
-        </div>
-
-        <div class="presets-scroll-row">
-          <button class="preset-chip" data-phrase="Bench press 225 pounds for 8 reps">Bench 225 × 8</button>
-          <button class="preset-chip" data-phrase="Add 5 pounds for 10 reps">+5 lbs × 10 (Relative)</button>
-          <button class="preset-chip" data-phrase="Same as last set">Same as last set</button>
-          <button class="preset-chip" data-phrase="Drop set on Cable Flyes: 60 pounds for 8, 40 for 10, 20 to failure">Drop Set Cable Fly</button>
-          <button class="preset-chip" data-phrase="Dips 15 reps with 25 pounds">Dips 15 (+25 lbs)</button>
-          <button class="preset-chip" data-phrase="Plank for 60 seconds">Plank 60s</button>
-          <button class="preset-chip" data-phrase="Incline DB 70 for 10">Incline DB 70 × 10</button>
-          <button class="preset-chip" data-phrase="Squats 225 pounds">Squats 225 (Missing Reps)</button>
-          <button class="preset-chip" data-phrase="RDL 185 for 10">RDL 185 × 10</button>
-          <button class="preset-chip" data-phrase="Bench press 100 kg for 8 reps">100 kg (Auto-Convert)</button>
-        </div>
-
-        <!-- Fallback Manual Input -->
-        <div id="manual-voice-container" class="manual-voice-container">
-          <input type="text" id="manual-voice-input" class="manual-voice-input" placeholder="e.g. Squat 315 for 5 reps..." aria-label="Manual voice command input">
-          <button id="manual-voice-submit-btn" class="manual-voice-submit-btn">Parse</button>
-        </div>
-      </section>
-
-      <!-- Recent Activity Ticker (PRD 2.2 #4) -->
+    <!-- Main Scrollable Workout Viewport (Grouped Exercise Cards & Set History) -->
+    <main class="main-viewport">
+      <!-- Recent Activity / Workout History (PRD 2.2 #4) -->
       <section class="activity-section" aria-label="Today's confirmed workout sets">
         <div class="activity-header">
           <span class="activity-title">Today's Workout Log</span>
@@ -171,13 +146,12 @@
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
           </svg>
           <span class="activity-empty-text">No sets logged yet today</span>
-          <span class="activity-empty-sub">Tap the microphone or a preset chip to log your first set</span>
+          <span class="activity-empty-sub">Tap the microphone to log your first set hands-free</span>
         </div>
 
-        <!-- Set Items List -->
+        <!-- Grouped Exercise Cards Container -->
         <div id="activity-list" class="activity-list"></div>
       </section>
-
     </main>
 
     <!-- System Media Bar Footer (PRD 2.2 #5 & Media Session API) -->
