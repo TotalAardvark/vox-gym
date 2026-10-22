@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0c0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Vox Gym - Voice-first workout tracker with real-time speech recognition and fuzzy matching.">
+  
+  <title>Vox Gym • Voice Workout Tracker</title>
+
+  <!-- PWA Manifest & Favicon -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/modals.css">
+</head>
+<body>
+
+  <!-- Strict 100dvh Application Viewport Frame -->
+  <div id="app-container">
+
+    <!-- Header / Control Bar (PRD 2.2 #1) -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-title">
+          <span class="brand-dot"></span>
+          <span>Vox Gym</span>
+        </div>
+        <span id="header-date" class="header-date">Today</span>
+      </div>
+
+      <!-- Floating Animated Rest Timer Pill -->
+      <div id="rest-timer-pill" class="rest-timer-pill" role="status" aria-live="polite">
+        <span class="rest-timer-label">REST</span>
+        <span id="rest-timer-text" class="rest-timer-time">01:30</span>
+        <button id="rest-timer-skip" class="rest-timer-skip-btn" aria-label="Skip rest timer" title="Skip">✕</button>
+      </div>
+
+      <div class="header-controls">
+        <!-- Rest Timer Toggle -->
+        <button id="rest-toggle-btn" class="header-toggle-btn" aria-label="Toggle auto rest timer" title="Toggle Auto Rest Timer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>REST</span>
+        </button>
+
+        <!-- Unit Preference Toggle (lbs / kg) -->
+        <button id="unit-toggle-btn" class="header-toggle-btn" aria-label="Toggle units lbs or kg" title="Toggle Weight Unit">
+          <span id="unit-badge">LBS</span>
+        </button>
+
+        <!-- Settings & Voice Tips -->
+        <button id="settings-btn" class="header-icon-btn" aria-label="Settings and voice tips" title="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Scrollable Workout Viewport -->
+    <main class="main-viewport">
+
+      <!-- Immediate Exercise Feedback Card (PRD 2.2 #3 & PRD 3.4) -->
+      <section id="feedback-card" class="feedback-card" aria-label="Exercise comparative stats">
+        <div class="feedback-header-row">
+          <div class="feedback-title-group">
+            <h2 id="feedback-ex-name" class="feedback-ex-title">Barbell Bench Press</h2>
+            <span id="feedback-muscle" class="feedback-muscle-badge">Chest</span>
+          </div>
+          <div id="feedback-trend-badge" class="trend-badge trend-neutral">
+            <span class="trend-arrow">🎯</span>
+            <span class="trend-text">Target: beat 215 lbs</span>
+          </div>
+        </div>
+
+        <div class="feedback-stats-grid">
+          <!-- This Session -->
+          <div class="feedback-stat-row">
+            <div id="feedback-this-session" class="this-session-stats">
+              <span class="stat-muted">No sets logged yet today</span>
+            </div>
+          </div>
+          <!-- Last Session Summary -->
+          <div id="feedback-last-session" class="last-session-stats">
+            <div class="last-session-label">Last Workout (Oct 19):</div>
+            <div class="last-session-val">215 lbs × 8, 8, 7</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Push-To-Talk (PTT) Central Zone (PRD 2.2 #2) -->
+      <section class="ptt-zone" aria-label="Voice input control">
+        <div class="ptt-interactive-wrapper">
+          <!-- Concentric Soundwave Pulse Rings -->
+          <div id="ptt-soundwaves" class="soundwaves-container">
+            <div class="soundwave-ring"></div>
+            <div class="soundwave-ring"></div>
+            <div class="soundwave-ring"></div>
+          </div>
+
+          <!-- Central Push-To-Talk Button -->
+          <button id="ptt-button" class="ptt-button idle" aria-label="Push to Talk: Tap or hold to speak gym set" title="Tap or hold to speak">
+            <svg class="ptt-mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Status & Live Transcription Preview -->
+        <span id="ptt-status-text" class="ptt-status-text">Tap or Hold to Speak</span>
+        <div id="live-transcript-box" class="live-transcript-box" aria-live="polite">
+          <span id="live-transcript-text" class="live-transcript-text">"Listening..."</span>
+        </div>
+      </section>
+
+      <!-- Quick Voice Simulator & Command Presets -->
+      <section class="presets-section" aria-label="Voice command testing presets">
+        <div class="presets-header">
+          <span class="presets-title">Tap to Test Voice Commands</span>
+          <button id="manual-voice-toggle-btn" class="manual-text-toggle-btn">Type Command</button>
+        </div>
+
+        <div class="presets-scroll-row">
+          <button class="preset-chip" data-phrase="Bench press 225 pounds for 8 reps">Bench 225 × 8</button>
+          <button class="preset-chip" data-phrase="Add 5 pounds for 10 reps">+5 lbs × 10 (Relative)</button>
+          <button class="preset-chip" data-phrase="Same as last set">Same as last set</button>
+          <button class="preset-chip" data-phrase="Drop set on Cable Flyes: 60 pounds for 8, 40 for 10, 20 to failure">Drop Set Cable Fly</button>
+          <button class="preset-chip" data-phrase="Dips 15 reps with 25 pounds">Dips 15 (+25 lbs)</button>
+          <button class="preset-chip" data-phrase="Plank for 60 seconds">Plank 60s</button>
+          <button class="preset-chip" data-phrase="Incline DB 70 for 10">Incline DB 70 × 10</button>
+          <button class="preset-chip" data-phrase="Squats 225 pounds">Squats 225 (Missing Reps)</button>
+          <button class="preset-chip" data-phrase="RDL 185 for 10">RDL 185 × 10</button>
+          <button class="preset-chip" data-phrase="Bench press 100 kg for 8 reps">100 kg (Auto-Convert)</button>
+        </div>
+
+        <!-- Fallback Manual Input -->
+        <div id="manual-voice-container" class="manual-voice-container">
+          <input type="text" id="manual-voice-input" class="manual-voice-input" placeholder="e.g. Squat 315 for 5 reps..." aria-label="Manual voice command input">
+          <button id="manual-voice-submit-btn" class="manual-voice-submit-btn">Parse</button>
+        </div>
+      </section>
+
+      <!-- Recent Activity Ticker (PRD 2.2 #4) -->
+      <section class="activity-section" aria-label="Today's confirmed workout sets">
+        <div class="activity-header">
+          <span class="activity-title">Today's Workout Log</span>
+          <div class="activity-metrics-summary">
+            <span id="total-sets-badge" class="activity-metric-pill">0 Sets</span>
+            <span id="total-volume-badge" class="activity-metric-pill">0 LBS</span>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="activity-empty-state" class="activity-empty-state">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          </svg>
+          <span class="activity-empty-text">No sets logged yet today</span>
+          <span class="activity-empty-sub">Tap the microphone or a preset chip to log your first set</span>
+        </div>
+
+        <!-- Set Items List -->
+        <div id="activity-list" class="activity-list"></div>
+      </section>
+
+    </main>
+
+    <!-- System Media Bar Footer (PRD 2.2 #5 & Media Session API) -->
+    <footer class="system-media-bar" aria-label="System audio player">
+      <div class="media-left">
+        <div class="media-art-thumbnail">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18V5l12-2v13"></path>
+            <circle cx="6" cy="18" r="3"></circle>
+            <circle cx="18" cy="16" r="3"></circle>
+          </svg>
+        </div>
+        <div class="media-info-text">
+          <span id="media-track-title" class="media-track-title">Beast Mode Protocol</span>
+          <span id="media-track-artist" class="media-track-artist">Vox Gym Audio</span>
+        </div>
+      </div>
+
+      <div class="media-controls-group">
+        <!-- Prev Track -->
+        <button id="media-btn-prev" class="media-ctrl-btn" aria-label="Previous track" title="Previous Track">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="19 20 9 12 19 4 19 20"></polygon>
+            <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5"></line>
+          </svg>
+        </button>
+
+        <!-- Play / Pause -->
+        <button id="media-btn-play" class="media-ctrl-btn btn-play-pause" aria-label="Play or pause workout audio" title="Play / Pause">
+          <svg id="icon-media-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <svg id="icon-media-pause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </svg>
+        </button>
+
+        <!-- Next Track -->
+        <button id="media-btn-next" class="media-ctrl-btn" aria-label="Next track" title="Next Track">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 4 15 12 5 20 5 4"></polygon>
+            <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line>
+          </svg>
+        </button>
+
+        <!-- Mute -->
+        <button id="media-btn-mute" class="media-ctrl-btn" aria-label="Toggle mute" title="Mute / Unmute">
+          <svg id="icon-media-volume" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="icon-media-mute" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          </svg>
+        </button>
+      </div>
+    </footer>
+
+  </div> <!-- End #app-container -->
+
+  <!-- Universal Modal Backdrop -->
+  <div id="modal-backdrop" class="modal-backdrop"></div>
+
+  <!-- Set Confirmation Modal with 4-Second "Color Crawl" (PRD 3.3) -->
+  <div id="confirm-modal" class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-exercise-title">
+    <div class="drawer-drag-pill"></div>
+
+    <div class="confirm-header-row">
+      <h3 id="confirm-exercise-title" class="confirm-exercise-title">Barbell Bench Press</h3>
+      <span id="confirm-type-badge" class="confirm-type-badge type-standard">STANDARD</span>
+    </div>
+
+    <!-- Standard Steppers Grid -->
+    <div id="confirm-standard-fields" class="steppers-grid">
+      <!-- Weight Stepper -->
+      <div class="stepper-box">
+        <span class="stepper-label">Weight</span>
+        <div class="stepper-controls">
+          <button id="btn-weight-minus" class="step-btn" aria-label="Decrease weight by 5">-</button>
+          <div class="stepper-value-wrapper">
+            <span id="confirm-weight-value" class="stepper-value">225</span>
+            <span id="confirm-weight-unit" class="stepper-unit">lbs</span>
+          </div>
+          <button id="btn-weight-plus" class="step-btn" aria-label="Increase weight by 5">+</button>
+        </div>
+      </div>
+
+      <!-- Reps Stepper -->
+      <div class="stepper-box">
+        <span class="stepper-label">Reps</span>
+        <div class="stepper-controls">
+          <button id="btn-reps-minus" class="step-btn" aria-label="Decrease reps by 1">-</button>
+          <div class="stepper-value-wrapper">
+            <span id="confirm-reps-value" class="stepper-value">8</span>
+            <span class="stepper-unit">reps</span>
+          </div>
+          <button id="btn-reps-plus" class="step-btn" aria-label="Increase reps by 1">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drop Set Custom Fields (Rendered dynamically when active) -->
+    <div id="confirm-drop-list" class="confirm-drop-list" style="display: none;"></div>
+
+    <!-- 4-Second Horizontal Color Crawl Progress Bar (PRD 3.3) -->
+    <div class="color-crawl-wrapper">
+      <div class="color-crawl-track">
+        <div id="color-crawl-progress" class="color-crawl-progress"></div>
+      </div>
+      <div id="color-crawl-status-text" class="color-crawl-status-text">
+        Auto-confirming in 4.0s... (Touch to edit)
+      </div>
+    </div>
+
+    <!-- Manual Confirm & Discard Action Buttons (Revealed when paused by touch) -->
+    <div id="manual-confirm-actions" class="manual-confirm-actions">
+      <button id="discard-confirm-btn" class="btn-confirm-action btn-confirm-discard">Discard</button>
+      <button id="manual-confirm-btn" class="btn-confirm-action btn-confirm-primary">Confirm Set</button>
+    </div>
+  </div>
+
+  <!-- Ambiguity Drawer (PRD 3.2) -->
+  <div id="ambiguity-drawer" class="bottom-drawer" role="dialog" aria-modal="true" aria-label="Exercise disambiguation">
+    <div class="drawer-drag-pill"></div>
+    <div class="ambiguity-header">
+      <h3 class="ambiguity-title">Select Matching Exercise</h3>
+      <p class="ambiguity-sub">You said <span id="ambiguity-spoken-term" class="ambiguity-spoken-term">"DB Fly"</span>. Which exercise did you mean?</p>
+    </div>
+    <div id="ambiguity-options-list" class="ambiguity-options-list"></div>
+  </div>
+
+  <!-- Incomplete Parameter Fallback Drawer (PRD 3.1) -->
+  <div id="incomplete-drawer" class="bottom-drawer" role="dialog" aria-modal="true" aria-label="Provide missing set parameters">
+    <div class="drawer-drag-pill"></div>
+    <div class="incomplete-header">
+      <h3 id="incomplete-title" class="incomplete-title">Set Details</h3>
+      <p id="incomplete-prompt" class="incomplete-prompt">How many reps did you complete?</p>
+    </div>
+
+    <!-- Quick Tap Pills Container -->
+    <div id="incomplete-pills-container" class="pills-container"></div>
+
+    <!-- Manual Input Row -->
+    <div class="incomplete-input-row">
+      <input type="number" id="incomplete-manual-input" class="incomplete-manual-input" placeholder="Or type number...">
+      <button id="incomplete-submit-btn" class="incomplete-submit-btn">Next</button>
+    </div>
+  </div>
+
+  <!-- Settings & Voice Tips Modal -->
+  <div id="settings-modal" class="settings-modal" role="dialog" aria-modal="true" aria-label="Vox Gym settings">
+    <div class="drawer-drag-pill"></div>
+    <div class="settings-header">
+      <h3 class="settings-title">Vox Gym Settings</h3>
+      <button id="close-settings-btn" class="close-settings-btn" aria-label="Close settings">✕</button>
+    </div>
+
+    <div class="setting-item">
+      <div>
+        <div class="setting-label">Rest Timer Duration</div>
+        <div class="setting-sub">Automatic countdown between sets</div>
+      </div>
+      <div class="slider-group">
+        <input type="range" id="rest-duration-input" min="30" max="180" step="15" value="90">
+        <span id="rest-duration-value" class="slider-val">90s</span>
+      </div>
+    </div>
+
+    <div class="setting-item">
+      <div>
+        <div class="setting-label">Sound Effects</div>
+        <div class="setting-sub">Web Audio mic and confirmation chimes</div>
+      </div>
+      <input type="checkbox" id="sound-toggle-checkbox" checked style="width: 22px; height: 22px; accent-color: var(--accent-green);">
+    </div>
+
+    <div class="setting-item">
+      <div>
+        <div class="setting-label">Haptic Vibration</div>
+        <div class="setting-sub">Vibrate on set auto-commit (PRD 3.3)</div>
+      </div>
+      <input type="checkbox" id="haptic-toggle-checkbox" checked style="width: 22px; height: 22px; accent-color: var(--accent-green);">
+    </div>
+
+    <!-- Voice Command Cheat Sheet -->
+    <div class="voice-guide-box">
+      <span class="guide-title">Spoken Command Cheat Sheet</span>
+      <div class="guide-row">
+        <span class="guide-cmd">"Bench press 225 pounds for 8 reps"</span>
+        <span class="guide-desc">Standard weight & reps set</span>
+      </div>
+      <div class="guide-row">
+        <span class="guide-cmd">"Same as last set"</span>
+        <span class="guide-desc">Duplicates previous weight and reps</span>
+      </div>
+      <div class="guide-row">
+        <span class="guide-cmd">"Add 5 pounds for 10 reps"</span>
+        <span class="guide-desc">Relative progression from last set</span>
+      </div>
+      <div class="guide-row">
+        <span class="guide-cmd">"Drop set on Cable Flyes: 60 for 8, 40 for 10, 20 to failure"</span>
+        <span class="guide-desc">Multi-drop sub-sets under one exercise</span>
+      </div>
+      <div class="guide-row">
+        <span class="guide-cmd">"Dips 15 reps with 25 pounds"</span>
+        <span class="guide-desc">Bodyweight with optional added resistance</span>
+      </div>
+      <div class="guide-row">
+        <span class="guide-cmd">"Plank for 60 seconds"</span>
+        <span class="guide-desc">Timed isometric exercise</span>
+      </div>
+      <div class="guide-row">
+        <span class="guide-cmd">"DB Fly 40 lbs 12 reps"</span>
+        <span class="guide-desc">Fuzzy alias normalization ("DB Fly" → Dumbbell Fly)</span>
+      </div>
+    </div>
+
+    <button id="reset-data-btn" class="btn-reset-data">Reset Demo Data</button>
+  </div>
+
+  <!-- Modular Scripts -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+/**
+ * Vox Gym - Modals, Drawers & "Color Crawl" Confirmation
+ */
+
+/* Modal Backdrop */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Base Bottom Sheet / Drawer Style */
+.bottom-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 18px 20px calc(18px + var(--sab)) 20px;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.8);
+  z-index: 60;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bottom-drawer.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.drawer-drag-pill {
+  width: 36px;
+  height: 4px;
+  background: var(--border-medium);
+  border-radius: var(--radius-full);
+  align-self: center;
+  margin-bottom: -6px;
+}
+
+/* ==========================================================================
+   1. Confirmation Modal & 4-Second "Color Crawl" Progress Bar (PRD 3.3)
+   ========================================================================== */
+.confirm-modal {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(175deg, #181d27, #11141b);
+  border: 1px solid rgba(0, 245, 155, 0.3);
+  border-bottom: none;
+  border-radius: 24px 24px 0 0;
+  padding: 20px 20px calc(24px + var(--sab)) 20px;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 245, 155, 0.15);
+  z-index: 70;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.confirm-modal.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.confirm-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.confirm-exercise-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.15;
+}
+
+.confirm-type-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.type-standard {
+  background: rgba(0, 245, 155, 0.15);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green-glow);
+}
+
+.type-drop {
+  background: rgba(255, 184, 0, 0.15);
+  color: var(--accent-amber);
+  border: 1px solid var(--accent-amber-glow);
+}
+
+.type-bw {
+  background: rgba(0, 229, 255, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan-glow);
+}
+
+.type-timed {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* Stepper Box Grid */
+.steppers-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stepper-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepper-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.stepper-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.step-btn {
+  width: 48px;
+  height: 48px;
+  min-width: var(--min-touch-target);
+  min-height: var(--min-touch-target);
+  border-radius: var(--radius-full);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.step-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0.92);
+}
+
+.stepper-value-wrapper {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+}
+
+.stepper-value {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: var(--font-family-mono);
+}
+
+.stepper-unit {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Drop set list inside confirmation */
+.confirm-drop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.drop-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
+.drop-idx-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-amber);
+}
+
+.drop-steppers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mini-step {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  font-size: 1rem;
+}
+
+.drop-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.drop-sep {
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Horizontal "Color Crawl" Progress Bar (PRD 3.3)
+   ========================================================================== */
+.color-crawl-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.color-crawl-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.color-crawl-progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+  box-shadow: 0 0 12px var(--accent-green-glow);
+  border-radius: var(--radius-full);
+  will-change: width;
+}
+
+.color-crawl-progress.paused {
+  background: var(--accent-amber);
+  box-shadow: 0 0 12px var(--accent-amber-glow);
+}
+
+.color-crawl-progress.confirmed {
+  background: var(--accent-green);
+  box-shadow: 0 0 20px var(--accent-green);
+}
+
+.color-crawl-status-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  min-height: 20px;
+}
+
+.confirmed-badge {
+  color: var(--accent-green);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+  animation: pulseGreen 0.3s ease;
+}
+
+@keyframes pulseGreen {
+  0% { transform: scale(0.9); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* Manual Confirm / Discard Buttons */
+.manual-confirm-actions {
+  display: none;
+  gap: 10px;
+}
+
+.btn-confirm-action {
+  flex: 1;
+  min-height: var(--min-touch-target);
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.btn-confirm-primary {
+  background: var(--accent-green);
+  color: var(--text-dark);
+}
+
+.btn-confirm-discard {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   2. Ambiguity Drawer (PRD 3.2)
+   ========================================================================== */
+.ambiguity-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ambiguity-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.ambiguity-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ambiguity-spoken-term {
+  color: var(--accent-amber);
+  font-weight: 700;
+}
+
+.ambiguity-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ambiguity-option-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--min-touch-target);
+  text-align: left;
+}
+
+.ambiguity-option-btn:active {
+  border-color: var(--accent-green);
+  background: rgba(0, 245, 155, 0.08);
+}
+
+.ambiguity-option-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ambiguity-rank {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.ambiguity-text-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.ambiguity-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   3. Incomplete Parameter Fallback Drawer (PRD 3.1)
+   ========================================================================== */
+.incomplete-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.incomplete-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.incomplete-prompt {
+  font-size: 0.85rem;
+  color: var(--accent-amber);
+  font-weight: 600;
+}
+
+.pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-full);
+  padding: 0 16px;
+  height: 44px;
+  min-height: var(--min-touch-target);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pill-btn:active {
+  border-color: var(--accent-green);
+  background: var(--accent-green);
+  color: var(--text-dark);
+}
+
+.incomplete-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.incomplete-manual-input {
+  flex: 1;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  height: 48px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.incomplete-submit-btn {
+  background: var(--accent-green);
+  color: var(--text-dark);
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  padding: 0 18px;
+  height: 48px;
+}
+
+/* ==========================================================================
+   4. Settings & Voice Tips Modal
+   ========================================================================== */
+.settings-modal {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px 20px calc(24px + var(--sab)) 20px;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.9);
+  z-index: 80;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-modal.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.close-settings-btn {
+  width: 40px;
+  height: 40px;
+  color: var(--text-muted);
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.setting-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.setting-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-val {
+  font-family: var(--font-family-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-green);
+  min-width: 40px;
+}
+
+/* Voice Cheat Sheet in Settings */
+.voice-guide-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guide-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+}
+
+.guide-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+
+.guide-cmd {
+  color: var(--accent-green);
+  font-family: var(--font-family-mono);
+  font-size: 0.78rem;
+}
+
+.guide-desc {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.btn-reset-data {
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  color: var(--accent-red);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  height: 48px;
+  margin-top: 8px;
+}

@@ -1,0 +1,54 @@
+/**
+ * Vox Gym - Design Tokens & Variables
+ */
+
+:root {
+  /* Color Palette - Gym Dark Aesthetic */
+  --bg-primary: #0a0c0f;
+  --bg-secondary: #12151b;
+  --bg-tertiary: #1b202a;
+  --bg-elevated: #232a37;
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.16);
+  --border-highlight: rgba(0, 245, 155, 0.35);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-dark: #0a0c0f;
+
+  /* Neon Accents */
+  --accent-green: #00f59b;
+  --accent-green-glow: rgba(0, 245, 155, 0.35);
+  --accent-cyan: #00e5ff;
+  --accent-cyan-glow: rgba(0, 229, 255, 0.35);
+  --accent-amber: #ffb800;
+  --accent-amber-glow: rgba(255, 184, 0, 0.35);
+  --accent-red: #ff4757;
+  --accent-red-glow: rgba(255, 71, 87, 0.35);
+
+  /* Typography */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family-mono: "SF Mono", Menlo, Consolas, Monaco, monospace;
+
+  /* Touch Ergonomics & Spacing */
+  --min-touch-target: 48px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.8);
+  --shadow-neon-green: 0 0 25px rgba(0, 245, 155, 0.45);
+  --shadow-neon-cyan: 0 0 25px rgba(0, 229, 255, 0.45);
+
+  /* Safe Area Insets for Mobile */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
