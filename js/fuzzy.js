@@ -96,13 +96,14 @@ export function normalize(text) {
 }
 
 /**
- * Match spoken input against the exercise database
+ * Match spoken input against the exercise database and custom exercises
  * Evaluates both the official exercise names and registered aliases.
  *
  * @param {string} input - Spoken exercise string (e.g., "db fly", "incline db", "bench press")
+ * @param {Array} [additionalExercises=[]] - Optional custom user exercises
  * @returns {Object} result - { bestMatch, matches, isAmbiguous, confidence }
  */
-export function matchExercise(input) {
+export function matchExercise(input, additionalExercises = []) {
   const cleanInput = normalize(input);
   if (!cleanInput) {
     return {
@@ -114,8 +115,11 @@ export function matchExercise(input) {
   }
 
   const scoredExercises = [];
+  const exerciseList = additionalExercises.length > 0 
+    ? [...EXERCISE_DATABASE, ...additionalExercises]
+    : EXERCISE_DATABASE;
 
-  for (const exercise of EXERCISE_DATABASE) {
+  for (const exercise of exerciseList) {
     let highestScoreForExercise = 0;
     let matchedTerm = exercise.name;
 

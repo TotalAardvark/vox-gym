@@ -24,11 +24,15 @@ export class UIController {
 
     // Cache DOM elements
     this.elements = {};
+    this.activeEditingSetId = null;
   }
 
   init() {
     this.cacheElements();
     this.setupRestTimer();
+    this.setupDrawer();
+    this.setupConfirmRename();
+    this.setupEditSetModal();
     this.renderHeader();
     this.renderTodaySession();
     this.renderInitialFeedbackCard();
@@ -38,20 +42,28 @@ export class UIController {
     this.elements = {
       appContainer: document.getElementById("app-container"),
       headerDate: document.getElementById("header-date"),
-      unitToggleBtn: document.getElementById("unit-toggle-btn"),
-      unitBadge: document.getElementById("unit-badge"),
       restToggleBtn: document.getElementById("rest-toggle-btn"),
       restTimerPill: document.getElementById("rest-timer-pill"),
       restTimerText: document.getElementById("rest-timer-text"),
       restTimerSkip: document.getElementById("rest-timer-skip"),
 
+      // Workout Drawer
+      workoutDrawer: document.getElementById("workout-drawer"),
+      drawerHeader: document.getElementById("drawer-header"),
+      drawerToggleBtn: document.getElementById("drawer-toggle-btn"),
+      drawerScrollBody: document.getElementById("drawer-scroll-body"),
+
       // Feedback Card
       feedbackCard: document.getElementById("feedback-card"),
       feedbackExName: document.getElementById("feedback-ex-name"),
       feedbackMuscle: document.getElementById("feedback-muscle"),
-      feedbackThisSession: document.getElementById("feedback-this-session"),
-      feedbackLastSession: document.getElementById("feedback-last-session"),
       feedbackTrendBadge: document.getElementById("feedback-trend-badge"),
+      feedbackTrendText: document.getElementById("feedback-trend-text"),
+      feedbackTodayBadge: document.getElementById("feedback-today-badge"),
+      feedbackTodaySets: document.getElementById("feedback-today-sets"),
+      feedbackLastDateLabel: document.getElementById("feedback-last-date-label"),
+      feedbackLastBadge: document.getElementById("feedback-last-badge"),
+      feedbackLastSets: document.getElementById("feedback-last-sets"),
 
       // Push to Talk Zone
       pttButton: document.getElementById("ptt-button"),
@@ -71,6 +83,7 @@ export class UIController {
       modalBackdrop: document.getElementById("modal-backdrop"),
       confirmExerciseTitle: document.getElementById("confirm-exercise-title"),
       confirmTypeBadge: document.getElementById("confirm-type-badge"),
+      confirmRenameBtn: document.getElementById("confirm-rename-btn"),
       confirmWeightValue: document.getElementById("confirm-weight-value"),
       confirmWeightUnit: document.getElementById("confirm-weight-unit"),
       confirmRepsValue: document.getElementById("confirm-reps-value"),
@@ -105,17 +118,38 @@ export class UIController {
       settingsModal: document.getElementById("settings-modal"),
       settingsBtn: document.getElementById("settings-btn"),
       closeSettingsBtn: document.getElementById("close-settings-btn"),
+      settingsUnitLbs: document.getElementById("settings-unit-lbs"),
+      settingsUnitKg: document.getElementById("settings-unit-kg"),
       restDurationInput: document.getElementById("rest-duration-input"),
       restDurationValue: document.getElementById("rest-duration-value"),
       soundToggleCheckbox: document.getElementById("sound-toggle-checkbox"),
       hapticToggleCheckbox: document.getElementById("haptic-toggle-checkbox"),
       resetDataBtn: document.getElementById("reset-data-btn"),
 
-      // Manual Voice Input Box
-      manualVoiceToggleBtn: document.getElementById("manual-voice-toggle-btn"),
-      manualVoiceContainer: document.getElementById("manual-voice-container"),
-      manualVoiceInput: document.getElementById("manual-voice-input"),
-      manualVoiceSubmitBtn: document.getElementById("manual-voice-submit-btn")
+      // Unit Choice Modal
+      unitModal: document.getElementById("unit-modal"),
+      choiceUnitLbs: document.getElementById("choice-unit-lbs"),
+      choiceUnitKg: document.getElementById("choice-unit-kg"),
+
+      // Edit Set Modal
+      editSetModal: document.getElementById("edit-set-modal"),
+      editSetTitle: document.getElementById("edit-set-title"),
+      editSetCloseBtn: document.getElementById("edit-set-close-btn"),
+      btnEditWeightMinus: document.getElementById("btn-edit-weight-minus"),
+      btnEditWeightPlus: document.getElementById("btn-edit-weight-plus"),
+      editWeightValue: document.getElementById("edit-weight-value"),
+      editWeightUnit: document.getElementById("edit-weight-unit"),
+      btnEditRepsMinus: document.getElementById("btn-edit-reps-minus"),
+      btnEditRepsPlus: document.getElementById("btn-edit-reps-plus"),
+      editRepsValue: document.getElementById("edit-reps-value"),
+      editSetCancelBtn: document.getElementById("edit-set-cancel-btn"),
+      editSetSaveBtn: document.getElementById("edit-set-save-btn"),
+
+      // Rename / Custom Exercise Modal
+      renameExerciseModal: document.getElementById("rename-exercise-modal"),
+      customExerciseInput: document.getElementById("custom-exercise-input"),
+      customExerciseSaveBtn: document.getElementById("custom-exercise-save-btn"),
+      renameSuggestionsList: document.getElementById("rename-suggestions-list")
     };
   }
 
@@ -125,13 +159,53 @@ export class UIController {
     if (this.elements.headerDate) {
       this.elements.headerDate.textContent = formatHumanDate(today);
     }
-    if (this.elements.unitBadge) {
-      this.elements.unitBadge.textContent = prefs.unit.toUpperCase();
-    }
     if (this.elements.restToggleBtn) {
       this.elements.restToggleBtn.setAttribute("aria-pressed", prefs.restTimerEnabled ? "true" : "false");
       this.elements.restToggleBtn.classList.toggle("active", prefs.restTimerEnabled);
     }
+    if (this.elements.settingsUnitLbs && this.elements.settingsUnitKg) {
+      this.elements.settingsUnitLbs.classList.toggle("active", prefs.unit === "lbs");
+      this.elements.settingsUnitKg.classList.toggle("active", prefs.unit === "kg");
+    }
+  }
+
+  // =========================================================================
+  // Workout Drawer Control
+  // =========================================================================
+  setupDrawer() {
+    if (this.elements.drawerHeader) {
+      this.elements.drawerHeader.addEventListener("click", () => {
+        this.toggleWorkoutDrawer();
+      });
+    }
+    if (this.elements.drawerToggleBtn) {
+      this.elements.drawerToggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.toggleWorkoutDrawer();
+      });
+    }
+  }
+
+  toggleWorkoutDrawer() {
+    if (!this.elements.workoutDrawer) return;
+    const isCollapsed = this.elements.workoutDrawer.classList.contains("collapsed");
+    if (isCollapsed) {
+      this.expandWorkoutDrawer();
+    } else {
+      this.collapseWorkoutDrawer();
+    }
+  }
+
+  expandWorkoutDrawer() {
+    if (!this.elements.workoutDrawer) return;
+    this.elements.workoutDrawer.classList.remove("collapsed");
+    this.elements.workoutDrawer.classList.add("expanded");
+  }
+
+  collapseWorkoutDrawer() {
+    if (!this.elements.workoutDrawer) return;
+    this.elements.workoutDrawer.classList.remove("expanded");
+    this.elements.workoutDrawer.classList.add("collapsed");
   }
 
   // =========================================================================
@@ -152,7 +226,8 @@ export class UIController {
 
     if (!stats) return;
 
-    const dbEntry = EXERCISE_DATABASE.find(e => e.name === exerciseName);
+    const allExercises = [...EXERCISE_DATABASE, ...storage.getCustomExercises()];
+    const dbEntry = allExercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
     const muscle = dbEntry ? dbEntry.muscle : "Strength";
 
     if (this.elements.feedbackExName) {
@@ -162,43 +237,67 @@ export class UIController {
       this.elements.feedbackMuscle.textContent = muscle;
     }
 
-    // This Session
-    if (this.elements.feedbackThisSession) {
-      if (stats.thisSession.setCount > 0) {
-        const formattedVol = stats.thisSession.volume.toLocaleString();
-        this.elements.feedbackThisSession.innerHTML = `
-          <span class="stat-highlight">Set ${stats.thisSession.setCount}</span>
-          <span class="stat-bullet">•</span>
-          <span>Volume: ${formattedVol} ${unit}</span>
-        `;
-      } else {
-        this.elements.feedbackThisSession.innerHTML = `<span class="stat-muted">No sets logged yet today</span>`;
-      }
-    }
-
-    // Last Session Summary
-    if (this.elements.feedbackLastSession) {
-      if (stats.lastSession) {
-        this.elements.feedbackLastSession.innerHTML = `
-          <div class="last-session-label">Last Workout (${stats.lastSession.formattedDate}):</div>
-          <div class="last-session-val">${stats.lastSession.setsSummary}</div>
-        `;
-      } else {
-        this.elements.feedbackLastSession.innerHTML = `
-          <div class="last-session-label">Previous Workout:</div>
-          <div class="last-session-val stat-muted">No prior recorded sessions</div>
-        `;
-      }
-    }
-
     // Micro-Trend Indicator
-    if (this.elements.feedbackTrendBadge) {
+    if (this.elements.feedbackTrendBadge && this.elements.feedbackTrendText) {
       const trend = stats.microTrend;
       this.elements.feedbackTrendBadge.className = `trend-badge trend-${trend.direction}`;
-      this.elements.feedbackTrendBadge.innerHTML = `
-        <span class="trend-arrow">${trend.arrow || "•"}</span>
-        <span class="trend-text">${trend.text}</span>
-      `;
+      this.elements.feedbackTrendText.textContent = trend.text;
+    }
+
+    // Today's Row: Badge & Sets Flow
+    if (this.elements.feedbackTodayBadge) {
+      const count = stats.thisSession.setCount;
+      const countStr = `${count} ${count === 1 ? 'set' : 'sets'}`;
+      const volStr = `${stats.thisSession.volume.toLocaleString()} ${unit}`;
+      this.elements.feedbackTodayBadge.textContent = `${countStr} • ${volStr}`;
+    }
+
+    if (this.elements.feedbackTodaySets) {
+      const rawSets = stats.thisSession.rawSets || [];
+      if (rawSets.length === 0) {
+        this.elements.feedbackTodaySets.innerHTML = `<span class="stat-muted">No sets logged yet today</span>`;
+      } else {
+        const lastIdx = rawSets.length - 1;
+        this.elements.feedbackTodaySets.innerHTML = rawSets.map((s, idx) => {
+          const isLatest = idx === lastIdx;
+          const w = s.weight || s.addedWeight || 0;
+          const r = s.reps || 0;
+          const str = `${w} ${s.unit || unit} × ${r}`;
+          const itemHtml = `<span class="flow-set-item ${isLatest ? 'highlight-latest' : ''}">${str}</span>`;
+          return idx > 0 ? `<span class="flow-divider">|</span>${itemHtml}` : itemHtml;
+        }).join(" ");
+      }
+    }
+
+    // Last Workout Row: Date, Badge & Sets Flow
+    if (this.elements.feedbackLastDateLabel) {
+      const dateStr = stats.lastSession ? `Last Workout (${stats.lastSession.formattedDate}):` : "Last Workout:";
+      this.elements.feedbackLastDateLabel.textContent = dateStr;
+    }
+
+    if (this.elements.feedbackLastBadge) {
+      if (stats.lastSession) {
+        const count = stats.lastSession.setCount || 0;
+        const countStr = `${count} ${count === 1 ? 'set' : 'sets'}`;
+        const volStr = `${(stats.lastSession.volume || 0).toLocaleString()} ${unit}`;
+        this.elements.feedbackLastBadge.textContent = `${countStr} • ${volStr}`;
+      } else {
+        this.elements.feedbackLastBadge.textContent = `0 sets • 0 ${unit}`;
+      }
+    }
+
+    if (this.elements.feedbackLastSets) {
+      if (stats.lastSession && Array.isArray(stats.lastSession.rawSets) && stats.lastSession.rawSets.length > 0) {
+        this.elements.feedbackLastSets.innerHTML = stats.lastSession.rawSets.map((s, idx) => {
+          const w = s.weight || s.addedWeight || 0;
+          const r = s.reps || 0;
+          const str = `${w} ${s.unit || unit} × ${r}`;
+          const itemHtml = `<span class="flow-set-item">${str}</span>`;
+          return idx > 0 ? `<span class="flow-divider">|</span>${itemHtml}` : itemHtml;
+        }).join(" ");
+      } else {
+        this.elements.feedbackLastSets.innerHTML = `<span class="stat-muted">No previous history</span>`;
+      }
     }
   }
 
@@ -274,7 +373,7 @@ export class UIController {
       const setCountText = `${group.sets.length} ${group.sets.length === 1 ? "Set" : "Sets"}`;
       const volText = groupVol > 0 ? ` • ${groupVol.toLocaleString()} ${unit}` : "";
 
-      const setsHtml = group.sets.map((set, setIndex) => {
+      const setsHtml = group.sets.map((set) => {
         let detailsHtml = "";
 
         if (set.type === "drop_set" && Array.isArray(set.drops)) {
@@ -294,20 +393,35 @@ export class UIController {
         return `
           <div class="group-set-row" data-set-id="${set.id}">
             <div class="group-set-left">
-              <span class="group-set-index">#${setIndex + 1}</span>
               <div class="group-set-content">
                 <div class="group-set-metrics">
                   ${detailsHtml}
                 </div>
-                <div class="group-set-time">${formatTime(set.timestamp)}</div>
               </div>
             </div>
-            <button class="btn-delete-set touch-target" data-delete-id="${set.id}" aria-label="Delete set ${setIndex + 1}" title="Delete set">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-            </button>
+            <div class="group-set-actions">
+              <!-- Duplicate Set -->
+              <button class="btn-set-action btn-dup-action" data-dup-id="${set.id}" aria-label="Duplicate set" title="Duplicate set">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              <!-- Edit Set -->
+              <button class="btn-set-action btn-edit-action" data-edit-id="${set.id}" aria-label="Edit set" title="Edit set">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </button>
+              <!-- Delete Set -->
+              <button class="btn-set-action btn-delete-action" data-delete-id="${set.id}" aria-label="Delete set" title="Delete set">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         `;
       }).join("");
@@ -330,9 +444,8 @@ export class UIController {
       `;
     }).join("");
 
-    // Wire delete buttons
-    const deleteBtns = this.elements.activityList.querySelectorAll(".btn-delete-set");
-    deleteBtns.forEach(btn => {
+    // Wire actions: Duplicate, Edit, Delete
+    this.elements.activityList.querySelectorAll(".btn-delete-action").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         const id = btn.getAttribute("data-delete-id");
@@ -345,6 +458,38 @@ export class UIController {
           } else {
             this.renderInitialFeedbackCard();
           }
+        }
+      });
+    });
+
+    this.elements.activityList.querySelectorAll(".btn-dup-action").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-dup-id");
+        if (id) {
+          const allSets = storage.getTodaySession().sets || [];
+          const targetSet = allSets.find(s => s.id === id);
+          if (targetSet) {
+            const duplicated = {
+              ...targetSet,
+              id: "set_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+              timestamp: new Date().toISOString()
+            };
+            storage.saveSet(duplicated);
+            this.renderTodaySession();
+            this.updateFeedbackCard(duplicated.exercise);
+            audioFeedback.triggerCommitFeedback();
+          }
+        }
+      });
+    });
+
+    this.elements.activityList.querySelectorAll(".btn-edit-action").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-edit-id");
+        if (id) {
+          this.openEditSetModal(id);
         }
       });
     });
@@ -364,27 +509,31 @@ export class UIController {
     // Populate Fields
     this.elements.confirmExerciseTitle.textContent = this.activeConfirmPayload.exercise;
 
+    // Check if exercise was previously logged or exists in history/catalog
+    const exists = storage.exerciseExistsInHistory(this.activeConfirmPayload.exercise);
+    const historyBadgeText = exists ? "LOGGED BEFORE" : "NEW EXERCISE";
+
     // Badges & Stepper Visibility
     if (this.activeConfirmPayload.type === "drop_set") {
-      this.elements.confirmTypeBadge.textContent = "DROP SET";
+      this.elements.confirmTypeBadge.textContent = historyBadgeText;
       this.elements.confirmTypeBadge.className = "confirm-type-badge type-drop";
       this.elements.confirmStandardFields.style.display = "none";
       this.elements.confirmDropList.style.display = "flex";
       this.renderDropSetFields();
     } else if (this.activeConfirmPayload.type === "bodyweight") {
-      this.elements.confirmTypeBadge.textContent = "BODYWEIGHT";
+      this.elements.confirmTypeBadge.textContent = historyBadgeText;
       this.elements.confirmTypeBadge.className = "confirm-type-badge type-bw";
       this.elements.confirmStandardFields.style.display = "grid";
       this.elements.confirmDropList.style.display = "none";
       this.updateStandardFields(this.activeConfirmPayload.addedWeight || 0, this.activeConfirmPayload.reps, `+${unit}`);
     } else if (this.activeConfirmPayload.type === "time") {
-      this.elements.confirmTypeBadge.textContent = "TIMED";
+      this.elements.confirmTypeBadge.textContent = historyBadgeText;
       this.elements.confirmTypeBadge.className = "confirm-type-badge type-timed";
       this.elements.confirmStandardFields.style.display = "grid";
       this.elements.confirmDropList.style.display = "none";
       this.updateStandardFields(this.activeConfirmPayload.duration, 1, "sec");
     } else {
-      this.elements.confirmTypeBadge.textContent = "STANDARD";
+      this.elements.confirmTypeBadge.textContent = historyBadgeText;
       this.elements.confirmTypeBadge.className = "confirm-type-badge type-standard";
       this.elements.confirmStandardFields.style.display = "grid";
       this.elements.confirmDropList.style.display = "none";
@@ -767,6 +916,236 @@ export class UIController {
       this.elements.liveTranscriptText.textContent = `"${text}"`;
     } else {
       this.elements.liveTranscriptBox.classList.remove("visible");
+    }
+  }
+
+  // =========================================================================
+  // 8. Edit Set Modal Steppers & Actions
+  // =========================================================================
+  setupEditSetModal() {
+    if (this.elements.editSetCloseBtn) {
+      this.elements.editSetCloseBtn.addEventListener("click", () => this.closeEditSetModal());
+    }
+    if (this.elements.editSetCancelBtn) {
+      this.elements.editSetCancelBtn.addEventListener("click", () => this.closeEditSetModal());
+    }
+
+    if (this.elements.btnEditWeightMinus) {
+      this.elements.btnEditWeightMinus.addEventListener("click", () => {
+        const cur = parseFloat(this.elements.editWeightValue.textContent) || 0;
+        this.elements.editWeightValue.textContent = Math.max(0, cur - 5);
+      });
+    }
+
+    if (this.elements.btnEditWeightPlus) {
+      this.elements.btnEditWeightPlus.addEventListener("click", () => {
+        const cur = parseFloat(this.elements.editWeightValue.textContent) || 0;
+        this.elements.editWeightValue.textContent = cur + 5;
+      });
+    }
+
+    if (this.elements.btnEditRepsMinus) {
+      this.elements.btnEditRepsMinus.addEventListener("click", () => {
+        const cur = parseInt(this.elements.editRepsValue.textContent, 10) || 1;
+        this.elements.editRepsValue.textContent = Math.max(1, cur - 1);
+      });
+    }
+
+    if (this.elements.btnEditRepsPlus) {
+      this.elements.btnEditRepsPlus.addEventListener("click", () => {
+        const cur = parseInt(this.elements.editRepsValue.textContent, 10) || 1;
+        this.elements.editRepsValue.textContent = cur + 1;
+      });
+    }
+
+    if (this.elements.editSetSaveBtn) {
+      this.elements.editSetSaveBtn.addEventListener("click", () => {
+        if (!this.activeEditingSetId) return;
+        const newWeight = parseFloat(this.elements.editWeightValue.textContent) || 0;
+        const newReps = parseInt(this.elements.editRepsValue.textContent, 10) || 1;
+
+        const updated = storage.updateSet(this.activeEditingSetId, {
+          weight: newWeight,
+          reps: newReps
+        });
+
+        this.closeEditSetModal();
+        this.renderTodaySession();
+        if (updated) {
+          this.updateFeedbackCard(updated.exercise);
+        }
+        audioFeedback.triggerCommitFeedback();
+      });
+    }
+  }
+
+  openEditSetModal(setId) {
+    const allSets = storage.getTodaySession().sets || [];
+    const target = allSets.find(s => s.id === setId);
+    if (!target) return;
+
+    this.activeEditingSetId = setId;
+    const prefs = storage.getPreferences();
+
+    if (this.elements.editSetTitle) {
+      this.elements.editSetTitle.textContent = `Edit ${target.exercise}`;
+    }
+    if (this.elements.editWeightValue) {
+      this.elements.editWeightValue.textContent = target.weight || target.addedWeight || 0;
+    }
+    if (this.elements.editWeightUnit) {
+      this.elements.editWeightUnit.textContent = target.unit || prefs.unit;
+    }
+    if (this.elements.editRepsValue) {
+      this.elements.editRepsValue.textContent = target.reps || 8;
+    }
+
+    if (this.elements.editSetModal) {
+      this.elements.editSetModal.classList.add("visible");
+    }
+    if (this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.add("visible");
+    }
+  }
+
+  closeEditSetModal() {
+    this.activeEditingSetId = null;
+    if (this.elements.editSetModal) {
+      this.elements.editSetModal.classList.remove("visible");
+    }
+    if (this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.remove("visible");
+    }
+  }
+
+  // =========================================================================
+  // 9. Confirm Modal Rename / Custom Exercise Register
+  // =========================================================================
+  setupConfirmRename() {
+    if (this.elements.confirmRenameBtn) {
+      this.elements.confirmRenameBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.pauseColorCrawl("Renaming exercise");
+        this.openRenameModal();
+      });
+    }
+
+    if (this.elements.customExerciseSaveBtn) {
+      this.elements.customExerciseSaveBtn.addEventListener("click", () => {
+        const val = (this.elements.customExerciseInput.value || "").trim();
+        if (val) {
+          this.applyExerciseRename(val);
+        }
+      });
+    }
+
+    if (this.elements.customExerciseInput) {
+      this.elements.customExerciseInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const val = (this.elements.customExerciseInput.value || "").trim();
+          if (val) {
+            this.applyExerciseRename(val);
+          }
+        }
+      });
+    }
+  }
+
+  openRenameModal() {
+    if (!this.activeConfirmPayload) return;
+    const currentName = this.activeConfirmPayload.exercise || "";
+    if (this.elements.customExerciseInput) {
+      this.elements.customExerciseInput.value = currentName;
+      setTimeout(() => this.elements.customExerciseInput.focus(), 100);
+    }
+
+    // List suggestions
+    const customList = storage.getCustomExercises();
+    const all = [...EXERCISE_DATABASE, ...customList];
+    const topSuggestions = all.slice(0, 6);
+
+    if (this.elements.renameSuggestionsList) {
+      this.elements.renameSuggestionsList.innerHTML = topSuggestions.map(ex => `
+        <button class="ambiguity-option-btn suggestion-pick-btn" data-name="${ex.name}">
+          <div class="ambiguity-option-left">
+            <span class="ambiguity-name">${ex.name}</span>
+            <span class="ambiguity-sub">${ex.muscle || "Machine"}</span>
+          </div>
+        </button>
+      `).join("");
+
+      this.elements.renameSuggestionsList.querySelectorAll(".suggestion-pick-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const pickName = btn.getAttribute("data-name");
+          if (pickName) this.applyExerciseRename(pickName);
+        });
+      });
+    }
+
+    if (this.elements.renameExerciseModal) {
+      this.elements.renameExerciseModal.classList.add("visible");
+    }
+  }
+
+  applyExerciseRename(newName) {
+    if (!this.activeConfirmPayload) return;
+
+    // Check if newName exists or save as custom
+    const all = [...EXERCISE_DATABASE, ...storage.getCustomExercises()];
+    const found = all.find(e => e.name.toLowerCase() === newName.toLowerCase());
+
+    const finalName = found ? found.name : newName;
+    if (!found) {
+      storage.saveCustomExercise({
+        name: finalName,
+        muscle: "Custom",
+        category: "machine",
+        aliases: [finalName.toLowerCase()]
+      });
+    }
+
+    this.activeConfirmPayload.exercise = finalName;
+    if (this.elements.confirmExerciseTitle) {
+      this.elements.confirmExerciseTitle.textContent = finalName;
+    }
+
+    const exists = storage.exerciseExistsInHistory(finalName);
+    if (this.elements.confirmTypeBadge) {
+      this.elements.confirmTypeBadge.textContent = exists ? "LOGGED BEFORE" : "NEW EXERCISE";
+    }
+
+    if (this.elements.renameExerciseModal) {
+      this.elements.renameExerciseModal.classList.remove("visible");
+    }
+  }
+
+  // =========================================================================
+  // 10. Initial Unit Modal
+  // =========================================================================
+  showUnitChoiceModal(onChoice) {
+    if (!this.elements.unitModal) return;
+    this.elements.unitModal.classList.add("visible");
+    if (this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.add("visible");
+    }
+
+    const select = (unit) => {
+      storage.savePreferences({ unit, unitChosen: true });
+      this.elements.unitModal.classList.remove("visible");
+      if (this.elements.modalBackdrop) {
+        this.elements.modalBackdrop.classList.remove("visible");
+      }
+      this.renderHeader();
+      this.renderTodaySession();
+      this.renderInitialFeedbackCard();
+      if (onChoice) onChoice(unit);
+    };
+
+    if (this.elements.choiceUnitLbs) {
+      this.elements.choiceUnitLbs.onclick = () => select("lbs");
+    }
+    if (this.elements.choiceUnitKg) {
+      this.elements.choiceUnitKg.onclick = () => select("kg");
     }
   }
 }

@@ -302,6 +302,176 @@ export const EXERCISE_DATABASE = [
       "rower", "rowing", "erg", "ergometer", "concept 2 row"
     ],
     defaultIncrement: 500
+  },
+  {
+    id: "machine-lateral-raise",
+    name: "Machine Lateral Raise",
+    muscle: "Shoulders (Side Delts)",
+    type: "weight_reps",
+    aliases: [
+      "lateral raise machine", "machine lateral raise", "machine side raise", "machine lat raise", "lever lateral raise", "seated lateral raise machine"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "pec-fly-machine",
+    name: "Pec Fly Machine",
+    muscle: "Chest",
+    type: "weight_reps",
+    aliases: [
+      "pec fly machine", "machine pec fly", "machine fly", "machine flyes", "pec deck", "peck deck", "pec dec", "butterfly machine", "seated machine fly"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "machine-chest-press",
+    name: "Machine Chest Press",
+    muscle: "Chest",
+    type: "weight_reps",
+    aliases: [
+      "chest press machine", "machine chest press", "seated chest press", "machine bench press", "selectorized chest press"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "machine-shoulder-press",
+    name: "Machine Shoulder Press",
+    muscle: "Shoulders",
+    type: "weight_reps",
+    aliases: [
+      "shoulder press machine", "machine shoulder press", "seated machine shoulder press", "overhead press machine", "lever shoulder press"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "smith-machine-bench-press",
+    name: "Smith Machine Bench Press",
+    muscle: "Chest",
+    type: "weight_reps",
+    aliases: [
+      "smith machine bench", "smith bench", "smith machine chest press", "smith bench press", "smith machine incline bench", "smith incline"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "smith-machine-squat",
+    name: "Smith Machine Squat",
+    muscle: "Legs (Quads & Glutes)",
+    type: "weight_reps",
+    aliases: [
+      "smith machine squats", "smith squat", "smith squats"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "machine-row",
+    name: "Machine Row",
+    muscle: "Back",
+    type: "weight_reps",
+    aliases: [
+      "machine row", "chest supported row", "machine rows", "chest supported machine row", "t bar machine row", "lever row"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "hack-squat",
+    name: "Hack Squat",
+    muscle: "Legs (Quads)",
+    type: "weight_reps",
+    aliases: [
+      "hack squat", "hack squats", "machine hack squat", "reverse hack squat"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "seated-leg-curl",
+    name: "Seated Leg Curl",
+    muscle: "Hamstrings",
+    type: "weight_reps",
+    aliases: [
+      "seated leg curl", "seated leg curls", "seated hamstring curl", "machine leg curl"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "lying-leg-curl",
+    name: "Lying Leg Curl",
+    muscle: "Hamstrings",
+    type: "weight_reps",
+    aliases: [
+      "lying leg curl", "lying leg curls", "prone leg curl", "prone hamstring curl"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "cable-lateral-raise",
+    name: "Cable Lateral Raise",
+    muscle: "Shoulders (Side Delts)",
+    type: "weight_reps",
+    aliases: [
+      "cable lateral raise", "cable lateral raises", "cable side raise", "cuffed cable lateral raise"
+    ],
+    defaultIncrement: 2.5
+  },
+  {
+    id: "machine-preacher-curl",
+    name: "Machine Preacher Curl",
+    muscle: "Arms (Biceps)",
+    type: "weight_reps",
+    aliases: [
+      "machine preacher curl", "preacher curl machine", "bicep curl machine", "machine curl"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "seated-calf-raise",
+    name: "Seated Calf Raise",
+    muscle: "Calves",
+    type: "weight_reps",
+    aliases: [
+      "seated calf raise", "calf raise machine", "machine calf raise", "standing calf raise machine", "donkey calf raise"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "assisted-pull-up",
+    name: "Assisted Pull-Up",
+    muscle: "Back & Biceps",
+    type: "weight_reps",
+    aliases: [
+      "assisted pull up", "assisted pull-up", "assisted chin up", "pull up machine"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "assisted-dip",
+    name: "Assisted Dip",
+    muscle: "Chest & Triceps",
+    type: "weight_reps",
+    aliases: [
+      "assisted dip", "assisted dips", "dip machine"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "hip-abductor-machine",
+    name: "Hip Abductor Machine",
+    muscle: "Glutes & Hips",
+    type: "weight_reps",
+    aliases: [
+      "hip abductor", "abductor machine", "hip abduction machine", "outer thigh machine"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "hip-adductor-machine",
+    name: "Hip Adductor Machine",
+    muscle: "Inner Thighs",
+    type: "weight_reps",
+    aliases: [
+      "hip adductor", "adductor machine", "hip adduction machine", "inner thigh machine"
+    ],
+    defaultIncrement: 10
   }
 ];
 

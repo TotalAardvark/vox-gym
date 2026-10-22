@@ -7,7 +7,6 @@ import { storage } from './storage.js';
 import { ui } from './ui.js';
 import { speechEngine } from './speech.js';
 import { parseVoiceIntent } from './nlp-parser.js';
-import { mediaSession, WORKOUT_TRACKS } from './media-session.js';
 import { audioFeedback } from './audio-feedback.js';
 
 class VoxGymApp {
@@ -19,14 +18,14 @@ class VoxGymApp {
     // 1. Initialize UI & Storage
     ui.init();
 
-    // 2. Setup Speech Recognition
+    // 2. Check initial unit choice if not yet selected
+    this.checkInitialUnitChoice();
+
+    // 3. Setup Speech Recognition
     this.setupSpeechEvents();
 
-    // 3. Setup Stepper and Confirmation Modal Controls
+    // 4. Setup Stepper and Confirmation Modal Controls
     this.setupModalControls();
-
-    // 4. Setup Media Session Footer Controls
-    this.setupMediaControls();
 
     // 5. Setup Header & Settings Controls
     this.setupHeaderAndSettings();
@@ -38,6 +37,15 @@ class VoxGymApp {
     this.registerServiceWorker();
 
     console.log("Vox Gym App initialized successfully.");
+  }
+
+  checkInitialUnitChoice() {
+    const prefs = storage.getPreferences();
+    if (!prefs.unitChosen) {
+      ui.showUnitChoiceModal((chosenUnit) => {
+        console.log("Initial unit chosen:", chosenUnit);
+      });
+    }
   }
 
   // =========================================================================
@@ -244,97 +252,25 @@ class VoxGymApp {
   }
 
   // =========================================================================
-  // Media Session Footer Controls
-  // =========================================================================
-  setupMediaControls() {
-    mediaSession.init();
-
-    const mediaTrackName = document.getElementById("media-track-title");
-    const mediaTrackArtist = document.getElementById("media-track-artist");
-    const btnPlayPause = document.getElementById("media-btn-play");
-    const btnPrev = document.getElementById("media-btn-prev");
-    const btnNext = document.getElementById("media-btn-next");
-    const btnMute = document.getElementById("media-btn-mute");
-    const iconPlay = document.getElementById("icon-media-play");
-    const iconPause = document.getElementById("icon-media-pause");
-    const iconMute = document.getElementById("icon-media-mute");
-    const iconVolume = document.getElementById("icon-media-volume");
-
-    const updateMediaUI = (state) => {
-      if (mediaTrackName) mediaTrackName.textContent = state.currentTrack.title;
-      if (mediaTrackArtist) mediaTrackArtist.textContent = state.currentTrack.artist;
-
-      if (iconPlay && iconPause) {
-        if (state.isPlaying) {
-          iconPlay.style.display = "none";
-          iconPause.style.display = "block";
-        } else {
-          iconPlay.style.display = "block";
-          iconPause.style.display = "none";
-        }
-      }
-
-      if (iconMute && iconVolume) {
-        if (state.isMuted) {
-          iconMute.style.display = "block";
-          iconVolume.style.display = "none";
-        } else {
-          iconMute.style.display = "none";
-          iconVolume.style.display = "block";
-        }
-      }
-    };
-
-    mediaSession.onStateChange(updateMediaUI);
-    // Initial display
-    updateMediaUI({
-      isPlaying: mediaSession.isPlaying,
-      isMuted: mediaSession.isMuted,
-      currentTrack: WORKOUT_TRACKS[0]
-    });
-
-    if (btnPlayPause) {
-      btnPlayPause.addEventListener("click", () => {
-        mediaSession.togglePlay();
-      });
-    }
-
-    if (btnPrev) {
-      btnPrev.addEventListener("click", () => {
-        mediaSession.prevTrack();
-      });
-    }
-
-    if (btnNext) {
-      btnNext.addEventListener("click", () => {
-        mediaSession.nextTrack();
-      });
-    }
-
-    if (btnMute) {
-      btnMute.addEventListener("click", () => {
-        mediaSession.toggleMute();
-      });
-    }
-  }
-
-  // =========================================================================
   // Header, Preferences & Settings
   // =========================================================================
   setupHeaderAndSettings() {
-    // Unit Preference Toggle (lbs / kg)
-    if (ui.elements.unitToggleBtn) {
-      ui.elements.unitToggleBtn.addEventListener("click", () => {
-        const prefs = storage.getPreferences();
-        const nextUnit = prefs.unit === "lbs" ? "kg" : "lbs";
-        storage.savePreferences({ unit: nextUnit });
-        ui.renderHeader();
-        ui.renderTodaySession();
-        const last = storage.getLastLoggedSet();
-        if (last) {
-          ui.updateFeedbackCard(last.exercise);
-        }
-      });
+    // Settings Unit Selection Buttons (LBS / KG)
+    const updateUnitPreference = (newUnit) => {
+      storage.savePreferences({ unit: newUnit, unitChosen: true });
+      ui.renderHeader();
+      ui.renderTodaySession();
+      const last = storage.getLastLoggedSet();
+      if (last) {
+        ui.updateFeedbackCard(last.exercise);
+      }
+    };
+
+    if (ui.elements.settingsUnitLbs) {
+      ui.elements.settingsUnitLbs.addEventListener("click", () => updateUnitPreference("lbs"));
+    }
+    if (ui.elements.settingsUnitKg) {
+      ui.elements.settingsUnitKg.addEventListener("click", () => updateUnitPreference("kg"));
     }
 
     // Settings Modal

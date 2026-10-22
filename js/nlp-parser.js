@@ -103,7 +103,7 @@ export function convertWeight(val, fromUnit, toUnit) {
  * @returns {Object} Parsed intent payload
  */
 export function parseVoiceIntent(rawTranscript, context = {}) {
-  const { lastSet = null, userUnit = "lbs" } = context;
+  const { lastSet = null, userUnit = "lbs", customExercises = [] } = context;
   if (!rawTranscript || !rawTranscript.trim()) {
     return { error: "No voice input detected." };
   }
@@ -118,21 +118,21 @@ export function parseVoiceIntent(rawTranscript, context = {}) {
 
   // 2. DROP SET ("Drop set on Cable Flyes: 60 pounds for 8, 40 for 10, 20 to failure")
   if (isDropSetCommand(lower)) {
-    return parseDropSet(lower, userUnit, lastSet);
+    return parseDropSet(lower, userUnit, lastSet, customExercises);
   }
 
   // 3. TIME / DISTANCE EXERCISES ("Plank for 60 seconds", "Treadmill 1 mile in 8 mins")
   if (isTimeOrDistanceCommand(lower)) {
-    return parseTimeOrDistance(lower);
+    return parseTimeOrDistance(lower, customExercises);
   }
 
   // 4. BODYWEIGHT SET ("Dips 15 reps with 25 pounds", "Pull ups 10 reps bodyweight", "15 dips")
   if (isBodyweightCommand(lower)) {
-    return parseBodyweight(lower, userUnit);
+    return parseBodyweight(lower, userUnit, customExercises);
   }
 
   // 5. STANDARD SET ("Bench press 225 pounds for 8 reps", "Squat 315 for 5")
-  return parseStandardSet(lower, userUnit, lastSet);
+  return parseStandardSet(lower, userUnit, lastSet, customExercises);
 }
 
 /**
@@ -239,7 +239,7 @@ function isDropSetCommand(text) {
  * Parse drop set sequence
  * e.g., "Drop set on Cable Flyes: 60 pounds for 8, 40 for 10, 20 to failure"
  */
-function parseDropSet(text, userUnit, lastSet) {
+function parseDropSet(text, userUnit, lastSet, customExercises = []) {
   // Extract exercise name before the colon or numbers
   let exerciseNameStr = "";
   let segmentsStr = text;
@@ -262,7 +262,7 @@ function parseDropSet(text, userUnit, lastSet) {
   let targetExercise = null;
 
   if (exerciseNameStr) {
-    fuzzyRes = matchExercise(exerciseNameStr);
+    fuzzyRes = matchExercise(exerciseNameStr, customExercises);
     targetExercise = fuzzyRes.bestMatch;
   } else if (lastSet) {
     targetExercise = findExerciseByName(lastSet.exercise);
@@ -346,8 +346,8 @@ function isTimeOrDistanceCommand(text) {
  * Parse time or distance exercises
  * e.g., "Plank for 60 seconds", "Treadmill 1 mile in 8 mins"
  */
-function parseTimeOrDistance(text) {
-  const fuzzyRes = matchExercise(text);
+function parseTimeOrDistance(text, customExercises = []) {
+  const fuzzyRes = matchExercise(text, customExercises);
   const exercise = fuzzyRes.bestMatch || { name: "Plank", type: "time" };
 
   // Check distance + time e.g. "Treadmill 1 mile in 8 mins"
@@ -409,8 +409,8 @@ function isBodyweightCommand(text) {
  * Parse Bodyweight set
  * e.g., "Dips 15 reps with 25 pounds" / "Pull ups 10 reps bodyweight"
  */
-function parseBodyweight(text, userUnit) {
-  const fuzzyRes = matchExercise(text);
+function parseBodyweight(text, userUnit, customExercises = []) {
+  const fuzzyRes = matchExercise(text, customExercises);
   const exercise = fuzzyRes.bestMatch || { name: "Dips", type: "bodyweight" };
 
   // Added weight match: "with 25 pounds" / "plus 25 lbs" / "added 25"
@@ -474,7 +474,7 @@ function parseBodyweight(text, userUnit) {
  * Parse Standard Set
  * e.g., "Bench press 225 pounds for 8 reps", "Squats 315 for 5"
  */
-function parseStandardSet(text, userUnit, lastSet) {
+function parseStandardSet(text, userUnit, lastSet, customExercises = []) {
   // Check explicit unit in speech
   let spokenUnit = null;
   if (/\b(kg|kilos?|kilograms?)\b/i.test(text)) {
@@ -484,7 +484,7 @@ function parseStandardSet(text, userUnit, lastSet) {
   }
 
   // Extract exercise name by matching against database
-  const fuzzyRes = matchExercise(text);
+  const fuzzyRes = matchExercise(text, customExercises);
   const exercise = fuzzyRes.bestMatch;
 
   // Patterns for Weight & Reps

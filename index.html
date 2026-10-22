@@ -53,11 +53,6 @@
           <span>REST</span>
         </button>
 
-        <!-- Unit Preference Toggle (lbs / kg) -->
-        <button id="unit-toggle-btn" class="header-toggle-btn" aria-label="Toggle units lbs or kg" title="Toggle Weight Unit">
-          <span id="unit-badge">LBS</span>
-        </button>
-
         <!-- Settings & Voice Tips -->
         <button id="settings-btn" class="header-icon-btn" aria-label="Settings and voice tips" title="Settings">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -70,6 +65,11 @@
 
     <!-- Fixed Top Area: Last Logged Set Card & Voice Interaction Zone -->
     <div class="fixed-top-section">
+      <!-- Section Label -->
+      <div class="section-label-row">
+        <span class="section-sublabel">Last Set Logged:</span>
+      </div>
+
       <!-- Immediate Exercise Feedback Card (PRD 2.2 #3 & PRD 3.4) -->
       <section id="feedback-card" class="feedback-card" aria-label="Exercise comparative stats">
         <div class="feedback-header-row">
@@ -79,21 +79,33 @@
           </div>
           <div id="feedback-trend-badge" class="trend-badge trend-neutral">
             <span class="trend-arrow">🎯</span>
-            <span class="trend-text">Target: beat 215 lbs</span>
+            <span id="feedback-trend-text" class="trend-text">Target: beat 215 lbs</span>
           </div>
         </div>
 
         <div class="feedback-stats-grid">
-          <!-- This Session -->
-          <div class="feedback-stat-row">
-            <div id="feedback-this-session" class="this-session-stats">
+          <!-- Today Row: Left "Today:", Right Sets Badge, Bottom Sets Flow -->
+          <div class="feedback-session-block">
+            <div class="session-block-header">
+              <span class="session-block-title">Today:</span>
+              <span id="feedback-today-badge" class="session-badge-green">0 sets • 0 lbs</span>
+            </div>
+            <div id="feedback-today-sets" class="session-sets-flow">
               <span class="stat-muted">No sets logged yet today</span>
             </div>
           </div>
-          <!-- Last Session Summary -->
-          <div id="feedback-last-session" class="last-session-stats">
-            <div class="last-session-label">Last Workout (Oct 19):</div>
-            <div class="last-session-val">215 lbs × 8, 8, 7</div>
+
+          <div class="feedback-divider"></div>
+
+          <!-- Last Workout Row: Left "Last Workout (Date):", Right Sets Badge, Bottom Sets Flow -->
+          <div class="feedback-session-block">
+            <div class="session-block-header">
+              <span id="feedback-last-date-label" class="session-block-title">Last Workout:</span>
+              <span id="feedback-last-badge" class="session-badge-neutral">0 sets • 0 lbs</span>
+            </div>
+            <div id="feedback-last-sets" class="session-sets-flow">
+              <span class="stat-muted">No previous history</span>
+            </div>
           </div>
         </div>
       </section>
@@ -122,23 +134,32 @@
         <!-- Status & Live Transcription Preview -->
         <span id="ptt-status-text" class="ptt-status-text">Tap or Hold to Speak</span>
         <div id="live-transcript-box" class="live-transcript-box" aria-live="polite">
-          <span id="live-transcript-text" class="live-transcript-text">"Listening..."</span>
+          <span id="live-transcript-text" class="live-transcript-text">"lateral raises 10 by 20"</span>
         </div>
       </section>
     </div>
 
-    <!-- Main Scrollable Workout Viewport (Grouped Exercise Cards & Set History) -->
-    <main class="main-viewport">
-      <!-- Recent Activity / Workout History (PRD 2.2 #4) -->
-      <section class="activity-section" aria-label="Today's confirmed workout sets">
-        <div class="activity-header">
-          <span class="activity-title">Today's Workout Log</span>
+    <!-- Expandable Bottom Drawer for Today's Workout -->
+    <div id="workout-drawer" class="workout-drawer collapsed">
+      <!-- Drawer Drag Handle / Header -->
+      <div id="drawer-header" class="drawer-header" title="Tap or swipe to expand/collapse workout">
+        <div class="drawer-drag-pill"></div>
+        <div class="drawer-header-content">
+          <span class="activity-title">Today's Workout</span>
           <div class="activity-metrics-summary">
             <span id="total-sets-badge" class="activity-metric-pill">0 Sets</span>
             <span id="total-volume-badge" class="activity-metric-pill">0 LBS</span>
+            <button id="drawer-toggle-btn" class="drawer-chevron-btn" aria-label="Expand workout drawer">
+              <svg id="drawer-chevron-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="18 15 12 9 6 15"></polyline>
+              </svg>
+            </button>
           </div>
         </div>
+      </div>
 
+      <!-- Drawer Scrollable Body -->
+      <div id="drawer-scroll-body" class="drawer-scroll-body">
         <!-- Empty State -->
         <div id="activity-empty-state" class="activity-empty-state">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -151,66 +172,11 @@
 
         <!-- Grouped Exercise Cards Container -->
         <div id="activity-list" class="activity-list"></div>
-      </section>
-    </main>
-
-    <!-- System Media Bar Footer (PRD 2.2 #5 & Media Session API) -->
-    <footer class="system-media-bar" aria-label="System audio player">
-      <div class="media-left">
-        <div class="media-art-thumbnail">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18V5l12-2v13"></path>
-            <circle cx="6" cy="18" r="3"></circle>
-            <circle cx="18" cy="16" r="3"></circle>
-          </svg>
-        </div>
-        <div class="media-info-text">
-          <span id="media-track-title" class="media-track-title">Beast Mode Protocol</span>
-          <span id="media-track-artist" class="media-track-artist">Vox Gym Audio</span>
-        </div>
       </div>
 
-      <div class="media-controls-group">
-        <!-- Prev Track -->
-        <button id="media-btn-prev" class="media-ctrl-btn" aria-label="Previous track" title="Previous Track">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="19 20 9 12 19 4 19 20"></polygon>
-            <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5"></line>
-          </svg>
-        </button>
-
-        <!-- Play / Pause -->
-        <button id="media-btn-play" class="media-ctrl-btn btn-play-pause" aria-label="Play or pause workout audio" title="Play / Pause">
-          <svg id="icon-media-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-          <svg id="icon-media-pause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
-            <rect x="6" y="4" width="4" height="16"></rect>
-            <rect x="14" y="4" width="4" height="16"></rect>
-          </svg>
-        </button>
-
-        <!-- Next Track -->
-        <button id="media-btn-next" class="media-ctrl-btn" aria-label="Next track" title="Next Track">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 4 15 12 5 20 5 4"></polygon>
-            <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line>
-          </svg>
-        </button>
-
-        <!-- Mute -->
-        <button id="media-btn-mute" class="media-ctrl-btn" aria-label="Toggle mute" title="Mute / Unmute">
-          <svg id="icon-media-volume" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          </svg>
-          <svg id="icon-media-mute" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
-            <line x1="1" y1="1" x2="23" y2="23"></line>
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          </svg>
-        </button>
-      </div>
-    </footer>
+      <!-- Bottom Gradient Fade-out for Collapsed State -->
+      <div id="drawer-bottom-fade" class="drawer-bottom-fade"></div>
+    </div>
 
   </div> <!-- End #app-container -->
 
@@ -222,8 +188,16 @@
     <div class="drawer-drag-pill"></div>
 
     <div class="confirm-header-row">
-      <h3 id="confirm-exercise-title" class="confirm-exercise-title">Barbell Bench Press</h3>
-      <span id="confirm-type-badge" class="confirm-type-badge type-standard">STANDARD</span>
+      <div class="confirm-title-wrapper">
+        <h3 id="confirm-exercise-title" class="confirm-exercise-title">Barbell Bench Press</h3>
+        <button id="confirm-rename-btn" class="btn-icon-inline" aria-label="Rename or change exercise" title="Change exercise name">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+        </button>
+      </div>
+      <span id="confirm-type-badge" class="confirm-type-badge type-standard">LOGGED BEFORE</span>
     </div>
 
     <!-- Standard Steppers Grid -->
@@ -313,6 +287,17 @@
 
     <div class="setting-item">
       <div>
+        <div class="setting-label">Weight Unit</div>
+        <div class="setting-sub">Choose LBS or KG for set tracking</div>
+      </div>
+      <div class="setting-unit-buttons">
+        <button id="settings-unit-lbs" class="unit-chip-btn active">LBS</button>
+        <button id="settings-unit-kg" class="unit-chip-btn">KG</button>
+      </div>
+    </div>
+
+    <div class="setting-item">
+      <div>
         <div class="setting-label">Rest Timer Duration</div>
         <div class="setting-sub">Automatic countdown between sets</div>
       </div>
@@ -372,6 +357,83 @@
     </div>
 
     <button id="reset-data-btn" class="btn-reset-data">Reset Demo Data</button>
+  </div>
+
+  <!-- Initial Unit Choice Modal (Shown once if preferred unit not yet set) -->
+  <div id="unit-modal" class="settings-modal unit-select-modal" role="dialog" aria-modal="true" aria-label="Select default unit">
+    <div class="drawer-drag-pill"></div>
+    <div class="settings-header">
+      <h3 class="settings-title">Select Weight Unit</h3>
+    </div>
+    <p class="unit-modal-desc">Choose your preferred weight standard. You can change this anytime in Settings.</p>
+    <div class="unit-choice-cards">
+      <button id="choice-unit-lbs" class="unit-choice-card">
+        <span class="unit-choice-title">LBS</span>
+        <span class="unit-choice-sub">Pounds (US / Imperial)</span>
+      </button>
+      <button id="choice-unit-kg" class="unit-choice-card">
+        <span class="unit-choice-title">KG</span>
+        <span class="unit-choice-sub">Kilograms (Metric)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Edit Set Modal (Pencil icon from compressed set row) -->
+  <div id="edit-set-modal" class="confirm-modal edit-set-modal" role="dialog" aria-modal="true" aria-label="Edit logged set">
+    <div class="drawer-drag-pill"></div>
+    <div class="confirm-header-row">
+      <div class="confirm-title-wrapper">
+        <h3 id="edit-set-title" class="confirm-exercise-title">Edit Set</h3>
+      </div>
+      <button id="edit-set-close-btn" class="close-settings-btn" aria-label="Close set editor">✕</button>
+    </div>
+
+    <div class="steppers-grid">
+      <!-- Weight Stepper -->
+      <div class="stepper-box">
+        <span class="stepper-label">Weight</span>
+        <div class="stepper-controls">
+          <button id="btn-edit-weight-minus" class="step-btn" aria-label="Decrease weight">-</button>
+          <div class="stepper-value-wrapper">
+            <span id="edit-weight-value" class="stepper-value">225</span>
+            <span id="edit-weight-unit" class="stepper-unit">lbs</span>
+          </div>
+          <button id="btn-edit-weight-plus" class="step-btn" aria-label="Increase weight">+</button>
+        </div>
+      </div>
+
+      <!-- Reps Stepper -->
+      <div class="stepper-box">
+        <span class="stepper-label">Reps</span>
+        <div class="stepper-controls">
+          <button id="btn-edit-reps-minus" class="step-btn" aria-label="Decrease reps">-</button>
+          <div class="stepper-value-wrapper">
+            <span id="edit-reps-value" class="stepper-value">8</span>
+            <span class="stepper-unit">reps</span>
+          </div>
+          <button id="btn-edit-reps-plus" class="step-btn" aria-label="Increase reps">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="manual-confirm-actions" style="margin-top: 18px;">
+      <button id="edit-set-cancel-btn" class="btn-confirm-action btn-confirm-discard">Cancel</button>
+      <button id="edit-set-save-btn" class="btn-confirm-action btn-confirm-primary">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- Exercise Rename / Custom Register Modal -->
+  <div id="rename-exercise-modal" class="bottom-drawer" role="dialog" aria-modal="true" aria-label="Rename exercise">
+    <div class="drawer-drag-pill"></div>
+    <div class="ambiguity-header">
+      <h3 class="ambiguity-title">Edit Exercise Name</h3>
+      <p class="ambiguity-sub">Enter or select the correct exercise name to register it</p>
+    </div>
+    <div class="incomplete-input-row" style="margin: 12px 16px;">
+      <input type="text" id="custom-exercise-input" class="incomplete-manual-input" placeholder="e.g. Machine Lateral Raise" style="text-align: left; padding: 0 14px;">
+      <button id="custom-exercise-save-btn" class="incomplete-submit-btn">Save</button>
+    </div>
+    <div id="rename-suggestions-list" class="ambiguity-options-list" style="margin-top: 8px;"></div>
   </div>
 
   <!-- Modular Scripts -->

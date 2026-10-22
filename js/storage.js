@@ -6,11 +6,13 @@
 const STORAGE_KEYS = {
   PREFERENCES: "vox_gym_prefs_v1",
   WORKOUT_HISTORY: "vox_gym_history_v1",
-  ACTIVE_SESSION: "vox_gym_active_session_v1"
+  ACTIVE_SESSION: "vox_gym_active_session_v1",
+  CUSTOM_EXERCISES: "vox_gym_custom_exercises_v1"
 };
 
 const DEFAULT_PREFERENCES = {
   unit: "lbs", // "lbs" or "kg"
+  unitChosen: false,
   restTimerEnabled: true,
   restDurationSeconds: 90,
   soundEnabled: true,
@@ -143,6 +145,88 @@ export class StorageManager {
     if (history[today]) {
       history[today].sets = history[today].sets.filter(s => s.id !== setId);
       this.saveWorkoutHistory(history);
+    }
+  }
+
+  /**
+   * Update an existing set by ID
+   */
+  updateSet(setId, updates) {
+    const today = getTodayKey();
+    const history = this.getWorkoutHistory();
+    if (history[today]) {
+      const idx = history[today].sets.findIndex(s => s.id === setId);
+      if (idx !== -1) {
+        history[today].sets[idx] = { ...history[today].sets[idx], ...updates };
+        this.saveWorkoutHistory(history);
+        return history[today].sets[idx];
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Check if an exercise has ever been recorded before
+   */
+  exerciseExistsInHistory(exerciseName) {
+    if (!exerciseName) return false;
+    const clean = exerciseName.toLowerCase().trim();
+    const history = this.getWorkoutHistory();
+    for (const d of Object.keys(history)) {
+      const sets = history[d]?.sets || [];
+      if (sets.some(s => s.exercise && s.exercise.toLowerCase().trim() === clean)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Get custom registered exercises
+   */
+  getCustomExercises() {
+    try {
+      if (typeof localStorage === "undefined") return [];
+      const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_EXERCISES);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error("Failed to read custom exercises", e);
+      return [];
+    }
+  }
+
+  /**
+   * Save a newly registered custom exercise
+   */
+  saveCustomExercise(exerciseObj) {
+    try {
+      if (typeof localStorage === "undefined") return exerciseObj;
+      const list = this.getCustomExercises();
+      const cleanName = exerciseObj.name.trim();
+      // Avoid duplicate names
+      const existing = list.find(e => e.name.toLowerCase() === cleanName.toLowerCase());
+      if (existing) return existing;
+
+      const newEntry = {
+        id: "custom-" + Date.now(),
+        name: cleanName,
+        muscle: exerciseObj.muscle || "Custom Exercise",
+        type: exerciseObj.type || "weight_reps",
+        aliases: [
+          cleanName.toLowerCase(),
+          cleanName.toLowerCase().replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim(),
+          ...(exerciseObj.aliases || [])
+        ],
+        defaultIncrement: 5,
+        isCustom: true
+      };
+
+      list.push(newEntry);
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_EXERCISES, JSON.stringify(list));
+      return newEntry;
+    } catch (e) {
+      console.error("Failed to save custom exercise", e);
+      return exerciseObj;
     }
   }
 
