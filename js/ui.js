@@ -496,10 +496,13 @@ export class UIController {
     // Haptic burst & chime
     audioFeedback.triggerCommitFeedback();
 
+    const payloadToCommit = this.activeConfirmPayload ? { ...this.activeConfirmPayload } : null;
+    const confirmCb = this.onConfirmCallback;
+
     setTimeout(() => {
       this.closeConfirmationModal();
-      if (this.onConfirmCallback && this.activeConfirmPayload) {
-        this.onConfirmCallback(this.activeConfirmPayload);
+      if (confirmCb && payloadToCommit) {
+        confirmCb(payloadToCommit);
       }
     }, 400);
   }
