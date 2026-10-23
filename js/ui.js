@@ -253,7 +253,7 @@ export class UIController {
     }
 
     if (this.elements.feedbackTodaySets) {
-      const rawSets = stats.thisSession.rawSets || [];
+      const rawSets = stats.thisSession.rawSets || stats.thisSession.sets || [];
       if (rawSets.length === 0) {
         this.elements.feedbackTodaySets.innerHTML = `<span class="stat-muted">No sets logged yet today</span>`;
       } else {
@@ -277,7 +277,7 @@ export class UIController {
 
     if (this.elements.feedbackLastBadge) {
       if (stats.lastSession) {
-        const count = stats.lastSession.setCount || 0;
+        const count = stats.lastSession.setCount ?? (stats.lastSession.sets ? stats.lastSession.sets.length : 0);
         const countStr = `${count} ${count === 1 ? 'set' : 'sets'}`;
         const volStr = `${(stats.lastSession.volume || 0).toLocaleString()} ${unit}`;
         this.elements.feedbackLastBadge.textContent = `${countStr} • ${volStr}`;
@@ -287,8 +287,9 @@ export class UIController {
     }
 
     if (this.elements.feedbackLastSets) {
-      if (stats.lastSession && Array.isArray(stats.lastSession.rawSets) && stats.lastSession.rawSets.length > 0) {
-        this.elements.feedbackLastSets.innerHTML = stats.lastSession.rawSets.map((s, idx) => {
+      const pastSets = stats.lastSession?.rawSets || stats.lastSession?.sets || [];
+      if (stats.lastSession && Array.isArray(pastSets) && pastSets.length > 0) {
+        this.elements.feedbackLastSets.innerHTML = pastSets.map((s, idx) => {
           const w = s.weight || s.addedWeight || 0;
           const r = s.reps || 0;
           const str = `${w} ${s.unit || unit} × ${r}`;

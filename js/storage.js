@@ -373,7 +373,8 @@ export class StorageManager {
         volume: thisSessionVolume,
         bestWeight: thisBestWeight,
         bestReps: thisBestReps,
-        sets: todaySets
+        sets: todaySets,
+        rawSets: todaySets
       },
       lastSession: prevSessionDate ? {
         dateStr: prevSessionDate,
@@ -381,7 +382,9 @@ export class StorageManager {
         setsSummary: prevSetsSummary,
         bestWeight: prevBestWeight,
         volume: prevVolume,
-        sets: prevSets
+        setCount: prevSets.length,
+        sets: prevSets,
+        rawSets: prevSets
       } : null,
       microTrend
     };
