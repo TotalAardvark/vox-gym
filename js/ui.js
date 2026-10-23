@@ -13,7 +13,7 @@ export class UIController {
     this.activeConfirmPayload = null;
     this.colorCrawlTimer = null;
     this.colorCrawlStartTime = null;
-    this.colorCrawlDuration = 4000; // 4 seconds
+    this.colorCrawlDuration = 2500; // 2.5 seconds
     this.isCrawlPaused = false;
     this.onConfirmCallback = null;
 
@@ -619,7 +619,7 @@ export class UIController {
         this.elements.colorCrawlBar.style.width = `${percent}%`;
       }
 
-      const remainingSec = Math.max(0, (4.0 - (elapsed / 1000))).toFixed(1);
+      const remainingSec = Math.max(0, (2.5 - (elapsed / 1000))).toFixed(1);
       if (this.elements.colorCrawlStatusText) {
         this.elements.colorCrawlStatusText.textContent = `Auto-confirming in ${remainingSec}s... (Touch to edit)`;
       }
@@ -674,7 +674,7 @@ export class UIController {
       this.elements.manualConfirmActions.style.display = "none";
     }
     if (this.elements.colorCrawlStatusText) {
-      this.elements.colorCrawlStatusText.textContent = "Auto-confirming in 4.0s...";
+      this.elements.colorCrawlStatusText.textContent = "Auto-confirming in 2.5s...";
     }
   }
 
