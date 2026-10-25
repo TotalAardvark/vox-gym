@@ -1,9 +1,11 @@
 /**
  * Vox Gym - Service Worker
  * Provides offline caching for seamless gym workout tracking without active cell connection.
+ * Implements Network-First strategy to ensure updates are delivered instantly when online,
+ * with graceful cache fallback when offline.
  */
 
-const CACHE_NAME = "vox-gym-cache-v7";
+const CACHE_NAME = "vox-gym-cache-v8";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -38,6 +40,7 @@ self.addEventListener("activate", (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log("Removing outdated cache:", key);
             return caches.delete(key);
           }
         })
@@ -46,23 +49,30 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Network-First with Cache Fallback
 self.addEventListener("fetch", (event) => {
-  // Only handle GET requests
   if (event.request.method !== "GET") return;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        return networkResponse;
-      }).catch(() => {
-        // Fallback to index.html for navigation requests
-        if (event.request.mode === "navigate") {
-          return caches.match("./index.html");
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
         }
-      });
-    })
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          if (event.request.mode === "navigate") {
+            return caches.match("./index.html");
+          }
+        });
+      })
   );
 });

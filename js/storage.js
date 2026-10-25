@@ -251,12 +251,15 @@ export class StorageManager {
   getExerciseComparativeStats(exerciseName) {
     if (!exerciseName) return null;
 
+    const norm = (str) => (str || "").trim().toLowerCase();
+    const cleanTargetName = norm(exerciseName);
+
     const history = this.getWorkoutHistory();
     const todayKey = getTodayKey();
     const todaySession = history[todayKey] || { sets: [] };
 
-    // Sets completed today for this exercise
-    const todaySets = todaySession.sets.filter(s => s.exercise === exerciseName);
+    // Sets completed today for this exercise (case-insensitive & trimmed)
+    const todaySets = todaySession.sets.filter(s => norm(s.exercise) === cleanTargetName);
 
     let thisSessionVolume = 0;
     let thisBestWeight = 0;
@@ -279,7 +282,7 @@ export class StorageManager {
     let prevSets = [];
 
     for (const d of sortedDates) {
-      const setsForEx = (history[d]?.sets || []).filter(s => s.exercise === exerciseName);
+      const setsForEx = (history[d]?.sets || []).filter(s => norm(s.exercise) === cleanTargetName);
       if (setsForEx.length > 0) {
         prevSessionDate = d;
         prevSets = setsForEx;

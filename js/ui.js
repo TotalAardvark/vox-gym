@@ -252,17 +252,25 @@ export class UIController {
       this.elements.feedbackTodayBadge.textContent = `${countStr} • ${volStr}`;
     }
 
+    const formatSetText = (s) => {
+      const r = s.reps || 0;
+      if (s.type === "bodyweight" || s.isBodyweight) {
+        const added = s.addedWeight > 0 ? `+${s.addedWeight} ${s.unit || unit}` : (s.weight > 0 ? `${s.weight} ${s.unit || unit}` : "BW");
+        return `${added} × ${r}`;
+      }
+      const w = s.weight || s.addedWeight || 0;
+      return `${w} ${s.unit || unit} × ${r}`;
+    };
+
     if (this.elements.feedbackTodaySets) {
-      const rawSets = stats.thisSession.rawSets || stats.thisSession.sets || [];
-      if (rawSets.length === 0) {
+      const rawSets = stats.thisSession?.rawSets || stats.thisSession?.sets || [];
+      if (!rawSets || rawSets.length === 0) {
         this.elements.feedbackTodaySets.innerHTML = `<span class="stat-muted">No sets logged yet today</span>`;
       } else {
         const lastIdx = rawSets.length - 1;
         this.elements.feedbackTodaySets.innerHTML = rawSets.map((s, idx) => {
           const isLatest = idx === lastIdx;
-          const w = s.weight || s.addedWeight || 0;
-          const r = s.reps || 0;
-          const str = `${w} ${s.unit || unit} × ${r}`;
+          const str = formatSetText(s);
           const itemHtml = `<span class="flow-set-item ${isLatest ? 'highlight-latest' : ''}">${str}</span>`;
           return idx > 0 ? `<span class="flow-divider">|</span>${itemHtml}` : itemHtml;
         }).join(" ");
@@ -290,9 +298,7 @@ export class UIController {
       const pastSets = stats.lastSession?.rawSets || stats.lastSession?.sets || [];
       if (stats.lastSession && Array.isArray(pastSets) && pastSets.length > 0) {
         this.elements.feedbackLastSets.innerHTML = pastSets.map((s, idx) => {
-          const w = s.weight || s.addedWeight || 0;
-          const r = s.reps || 0;
-          const str = `${w} ${s.unit || unit} × ${r}`;
+          const str = formatSetText(s);
           const itemHtml = `<span class="flow-set-item">${str}</span>`;
           return idx > 0 ? `<span class="flow-divider">|</span>${itemHtml}` : itemHtml;
         }).join(" ");
@@ -491,6 +497,15 @@ export class UIController {
         const id = btn.getAttribute("data-edit-id");
         if (id) {
           this.openEditSetModal(id);
+        }
+      });
+    });
+
+    this.elements.activityList.querySelectorAll(".exercise-group-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const exName = card.getAttribute("data-exercise");
+        if (exName) {
+          this.updateFeedbackCard(exName);
         }
       });
     });

@@ -388,8 +388,19 @@ class VoxGymApp {
   registerServiceWorker() {
     if ("serviceWorker" in navigator && (window.location.protocol === "https:" || window.location.hostname === "localhost")) {
       navigator.serviceWorker.register("sw.js")
-        .then(reg => console.log("ServiceWorker registered successfully:", reg.scope))
+        .then(reg => {
+          console.log("ServiceWorker registered successfully:", reg.scope);
+          if (reg) reg.update();
+        })
         .catch(err => console.warn("ServiceWorker registration failed:", err));
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     }
   }
 }
