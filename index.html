@@ -110,6 +110,67 @@
         </div>
       </section>
 
+      <!-- Spotify Control Widget (Between Feedback Card & PTT Button) -->
+      <section id="spotify-widget-container" class="spotify-widget-container" aria-label="Spotify player control">
+        <!-- Connect Prompt Pill -->
+        <div id="spotify-connect-pill" class="spotify-pill-prompt">
+          <button id="spotify-connect-btn" class="spotify-btn-action" aria-label="Connect Spotify account">
+            <svg class="spotify-icon-svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.498 17.306c-.216.353-.674.467-1.027.251-2.812-1.718-6.352-2.107-10.523-1.155-.403.092-.808-.16-.9-.562-.092-.403.16-.808.562-.9 4.568-1.042 8.484-.598 11.637 1.339.353.216.467.674.251 1.027zm1.468-3.264c-.272.443-.854.584-1.297.312-3.218-1.978-8.125-2.55-11.932-1.394-.499.151-1.031-.133-1.182-.632-.151-.499.133-1.031.632-1.182 4.354-1.321 9.771-.682 13.467 1.599.443.272.584.854.312 1.297zm.126-3.41c-3.859-2.292-10.228-2.503-13.905-1.387-.593.18-1.223-.157-1.403-.75-.18-.593.157-1.223.75-1.403 4.231-1.284 11.265-1.041 15.698 1.592.533.316.709 1.008.393 1.541-.316.533-1.008.709-1.541.393z"/>
+            </svg>
+            <span class="spotify-connect-text">Connect Spotify</span>
+          </button>
+          <button id="spotify-dismiss-btn" class="spotify-btn-close" aria-label="Dismiss Spotify widget" title="Hide Spotify widget">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Active Playback Player Pill -->
+        <div id="spotify-player-pill" class="spotify-pill-player" style="display: none;">
+          <div class="spotify-track-info">
+            <div id="spotify-album-art-wrap" class="spotify-art-wrap">
+              <img id="spotify-album-art" class="spotify-album-art" src="" alt="Album Art" style="display: none;" />
+              <div id="spotify-art-placeholder" class="spotify-art-placeholder">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="spotify-text-details">
+              <div id="spotify-track-name" class="spotify-track-name">Not Playing</div>
+              <div id="spotify-track-sub" class="spotify-track-sub">Open Spotify & hit Play</div>
+            </div>
+          </div>
+
+          <div class="spotify-controls">
+            <button id="spotify-prev-btn" class="spotify-ctrl-btn" aria-label="Previous track" title="Previous">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <polygon points="19,20 9,12 19,4"></polygon>
+                <line x1="5" y1="4" x2="5" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></line>
+              </svg>
+            </button>
+            <button id="spotify-play-btn" class="spotify-ctrl-btn spotify-play-pause-btn" aria-label="Play or pause" title="Play / Pause">
+              <svg id="spotify-play-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                <polygon points="6,4 20,12 6,20"></polygon>
+              </svg>
+              <svg id="spotify-pause-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="display: none;">
+                <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+              </svg>
+            </button>
+            <button id="spotify-next-btn" class="spotify-ctrl-btn" aria-label="Next track" title="Next">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <polygon points="5,4 15,12 5,20"></polygon>
+                <line x1="19" y1="4" x2="19" y2="20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- Push-To-Talk (PTT) Central Zone (PRD 2.2 #2) -->
       <section class="ptt-zone" aria-label="Voice input control">
         <div class="ptt-interactive-wrapper">
@@ -157,11 +218,6 @@
           <div class="activity-metrics-summary">
             <span id="total-sets-badge" class="activity-metric-pill">0 Sets</span>
             <span id="total-volume-badge" class="activity-metric-pill">0 LBS</span>
-            <button id="drawer-toggle-btn" class="drawer-chevron-btn" aria-label="Expand workout drawer">
-              <svg id="drawer-chevron-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="18 15 12 9 6 15"></polyline>
-              </svg>
-            </button>
           </div>
         </div>
       </div>
@@ -340,6 +396,17 @@
         <div class="setting-sub">Vibrate on set auto-commit (PRD 3.3)</div>
       </div>
       <input type="checkbox" id="haptic-toggle-checkbox" checked style="width: 22px; height: 22px; accent-color: var(--accent-green);">
+    </div>
+
+    <!-- Spotify Integration Setting -->
+    <div class="setting-item">
+      <div>
+        <div class="setting-label">Spotify Integration</div>
+        <div id="settings-spotify-status" class="setting-sub">Control gym music from inside the app</div>
+      </div>
+      <div id="settings-spotify-btn-wrap">
+        <button id="settings-spotify-btn" class="unit-chip-btn" style="min-width: 90px; font-weight: 600;">Connect</button>
+      </div>
     </div>
 
     <!-- Voice Command Cheat Sheet -->
@@ -558,6 +625,6 @@
   </div>
 
   <!-- Modular Scripts -->
-  <script type="module" src="js/app.js?v=15"></script>
+  <script type="module" src="js/app.js?v=20"></script>
 </body>
 </html>

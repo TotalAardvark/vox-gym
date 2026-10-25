@@ -779,6 +779,7 @@ button.flow-set-item.highlight-latest {
   flex-direction: column;
   gap: 10px;
   position: relative;
+  background: var(--bg-primary);
 }
 
 .drawer-scroll-body::-webkit-scrollbar {
@@ -799,7 +800,7 @@ button.flow-set-item.highlight-latest {
   right: 0;
   width: 100%;
   height: 38px;
-  background: linear-gradient(to bottom, transparent, var(--fade-gradient-to) 90%);
+  background: linear-gradient(to bottom, transparent, var(--bg-primary) 90%);
   pointer-events: none;
   opacity: 1;
   transition: opacity 0.2s ease;
@@ -830,7 +831,7 @@ button.flow-set-item.highlight-latest {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .activity-metrics-summary {

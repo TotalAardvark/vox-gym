@@ -8,10 +8,14 @@ import { ui } from './ui.js';
 import { speechEngine } from './speech.js';
 import { parseVoiceIntent } from './nlp-parser.js';
 import { audioFeedback } from './audio-feedback.js';
+import { SpotifyService } from './spotify.js';
 
 class VoxGymApp {
   constructor() {
     this.currentPendingPayload = null;
+    this.spotify = new SpotifyService({
+      onStateChange: (state) => this.handleSpotifyStateChange(state)
+    });
   }
 
   init() {
@@ -33,7 +37,10 @@ class VoxGymApp {
     // 6. Setup Preset Voice Simulator & Manual Input
     this.setupVoicePresets();
 
-    // 7. Register Service Worker for PWA
+    // 7. Setup Spotify Integration
+    this.setupSpotifyIntegration();
+
+    // 8. Register Service Worker for PWA
     this.registerServiceWorker();
 
     console.log("Vox Gym App initialized successfully.");
@@ -352,8 +359,158 @@ class VoxGymApp {
     if (ui.elements.soundToggleCheckbox) ui.elements.soundToggleCheckbox.checked = prefs.soundEnabled;
     if (ui.elements.hapticToggleCheckbox) ui.elements.hapticToggleCheckbox.checked = prefs.hapticsEnabled;
 
+    this.updateSpotifySettingsUI();
+
     if (ui.elements.settingsModal) ui.elements.settingsModal.classList.add("visible");
     if (ui.elements.modalBackdrop) ui.elements.modalBackdrop.classList.add("visible");
+  }
+
+  // =========================================================================
+  // Spotify Integration Controller
+  // =========================================================================
+  async setupSpotifyIntegration() {
+    // 1. Handle OAuth redirect return if ?code= in URL
+    await this.spotify.handleCallbackIfPresent();
+
+    // 2. Setup button event listeners
+    if (ui.elements.spotifyConnectBtn) {
+      ui.elements.spotifyConnectBtn.addEventListener("click", () => {
+        this.spotify.initiateAuth();
+      });
+    }
+
+    if (ui.elements.spotifyDismissBtn) {
+      ui.elements.spotifyDismissBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.spotify.setWidgetDismissed(true);
+        this.updateSpotifyWidgetVisibility();
+      });
+    }
+
+    if (ui.elements.settingsSpotifyBtn) {
+      ui.elements.settingsSpotifyBtn.addEventListener("click", () => {
+        if (this.spotify.isAuthenticated()) {
+          this.spotify.disconnect();
+          this.updateSpotifySettingsUI();
+          this.updateSpotifyWidgetVisibility();
+        } else {
+          this.spotify.initiateAuth();
+        }
+      });
+    }
+
+    if (ui.elements.spotifyPlayBtn) {
+      ui.elements.spotifyPlayBtn.addEventListener("click", () => {
+        this.spotify.togglePlayPause();
+      });
+    }
+
+    if (ui.elements.spotifyNextBtn) {
+      ui.elements.spotifyNextBtn.addEventListener("click", () => {
+        this.spotify.nextTrack();
+      });
+    }
+
+    if (ui.elements.spotifyPrevBtn) {
+      ui.elements.spotifyPrevBtn.addEventListener("click", () => {
+        this.spotify.previousTrack();
+      });
+    }
+
+    // 3. Start polling if authenticated, otherwise render initial prompt state
+    if (this.spotify.isAuthenticated()) {
+      this.spotify.startPolling(3500);
+    } else {
+      this.updateSpotifyWidgetVisibility();
+    }
+  }
+
+  handleSpotifyStateChange(state) {
+    this.updateSpotifyWidgetVisibility();
+    this.updateSpotifySettingsUI();
+
+    if (!state || !state.isConnected) {
+      return;
+    }
+
+    // Update Player UI elements
+    if (ui.elements.spotifyTrackName) {
+      ui.elements.spotifyTrackName.textContent = state.trackName || "Not Playing";
+    }
+
+    if (ui.elements.spotifyTrackSub) {
+      if (state.trackName) {
+        ui.elements.spotifyTrackSub.textContent = state.artistName || state.deviceName || "Spotify";
+      } else {
+        ui.elements.spotifyTrackSub.textContent = state.deviceName ? `Device: ${state.deviceName}` : "Open Spotify & hit Play";
+      }
+    }
+
+    if (ui.elements.spotifyAlbumArt && ui.elements.spotifyArtPlaceholder) {
+      if (state.albumArt) {
+        ui.elements.spotifyAlbumArt.src = state.albumArt;
+        ui.elements.spotifyAlbumArt.style.display = "block";
+        ui.elements.spotifyArtPlaceholder.style.display = "none";
+      } else {
+        ui.elements.spotifyAlbumArt.style.display = "none";
+        ui.elements.spotifyArtPlaceholder.style.display = "flex";
+      }
+    }
+
+    // Toggle Play / Pause Icons
+    if (ui.elements.spotifyPlayIcon && ui.elements.spotifyPauseIcon) {
+      if (state.isPlaying) {
+        ui.elements.spotifyPlayIcon.style.display = "none";
+        ui.elements.spotifyPauseIcon.style.display = "block";
+      } else {
+        ui.elements.spotifyPlayIcon.style.display = "block";
+        ui.elements.spotifyPauseIcon.style.display = "none";
+      }
+    }
+  }
+
+  updateSpotifyWidgetVisibility() {
+    const isAuthed = this.spotify.isAuthenticated();
+    const isDismissed = this.spotify.isWidgetDismissed();
+
+    if (!ui.elements.spotifyWidgetContainer) return;
+
+    if (isAuthed) {
+      // User is logged in: always show active playback pill
+      ui.elements.spotifyWidgetContainer.style.display = "flex";
+      if (ui.elements.spotifyConnectPill) ui.elements.spotifyConnectPill.style.display = "none";
+      if (ui.elements.spotifyPlayerPill) ui.elements.spotifyPlayerPill.style.display = "flex";
+    } else {
+      // User is not logged in
+      if (ui.elements.spotifyPlayerPill) ui.elements.spotifyPlayerPill.style.display = "none";
+
+      if (isDismissed) {
+        // User tapped the 'X' button to hide it
+        ui.elements.spotifyWidgetContainer.style.display = "none";
+      } else {
+        // Show "Connect Spotify" prompt pill
+        ui.elements.spotifyWidgetContainer.style.display = "flex";
+        if (ui.elements.spotifyConnectPill) ui.elements.spotifyConnectPill.style.display = "inline-flex";
+      }
+    }
+  }
+
+  updateSpotifySettingsUI() {
+    if (!ui.elements.settingsSpotifyBtn || !ui.elements.settingsSpotifyStatus) return;
+
+    if (this.spotify.isAuthenticated()) {
+      ui.elements.settingsSpotifyStatus.textContent = "Connected to Spotify account";
+      ui.elements.settingsSpotifyBtn.textContent = "Disconnect";
+      ui.elements.settingsSpotifyBtn.style.background = "rgba(255, 71, 87, 0.15)";
+      ui.elements.settingsSpotifyBtn.style.color = "var(--accent-red)";
+      ui.elements.settingsSpotifyBtn.style.borderColor = "var(--accent-red-glow)";
+    } else {
+      ui.elements.settingsSpotifyStatus.textContent = "Control gym music from inside the app";
+      ui.elements.settingsSpotifyBtn.textContent = "Connect";
+      ui.elements.settingsSpotifyBtn.style.background = "";
+      ui.elements.settingsSpotifyBtn.style.color = "";
+      ui.elements.settingsSpotifyBtn.style.borderColor = "";
+    }
   }
 
   // =========================================================================

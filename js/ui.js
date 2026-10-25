@@ -128,6 +128,25 @@ export class UIController {
       soundToggleCheckbox: document.getElementById("sound-toggle-checkbox"),
       hapticToggleCheckbox: document.getElementById("haptic-toggle-checkbox"),
       resetDataBtn: document.getElementById("reset-data-btn"),
+      settingsSpotifyStatus: document.getElementById("settings-spotify-status"),
+      settingsSpotifyBtn: document.getElementById("settings-spotify-btn"),
+
+      // Spotify Widget Elements
+      spotifyWidgetContainer: document.getElementById("spotify-widget-container"),
+      spotifyConnectPill: document.getElementById("spotify-connect-pill"),
+      spotifyConnectBtn: document.getElementById("spotify-connect-btn"),
+      spotifyDismissBtn: document.getElementById("spotify-dismiss-btn"),
+      spotifyPlayerPill: document.getElementById("spotify-player-pill"),
+      spotifyAlbumArtWrap: document.getElementById("spotify-album-art-wrap"),
+      spotifyAlbumArt: document.getElementById("spotify-album-art"),
+      spotifyArtPlaceholder: document.getElementById("spotify-art-placeholder"),
+      spotifyTrackName: document.getElementById("spotify-track-name"),
+      spotifyTrackSub: document.getElementById("spotify-track-sub"),
+      spotifyPrevBtn: document.getElementById("spotify-prev-btn"),
+      spotifyPlayBtn: document.getElementById("spotify-play-btn"),
+      spotifyPlayIcon: document.getElementById("spotify-play-icon"),
+      spotifyPauseIcon: document.getElementById("spotify-pause-icon"),
+      spotifyNextBtn: document.getElementById("spotify-next-btn"),
 
       // Unit Choice Modal
       unitModal: document.getElementById("unit-modal"),
