@@ -16,9 +16,7 @@ html {
   color: var(--text-primary);
   /* Lock dynamic viewport */
   height: 100%;
-  min-height: 100%;
-  min-height: -webkit-fill-available;
-  height: 100dvh;
+  height: -webkit-fill-available;
   overflow: hidden;
   -webkit-text-size-adjust: 100%;
 }
@@ -27,7 +25,6 @@ body {
   height: 100%;
   min-height: 100%;
   min-height: -webkit-fill-available;
-  height: 100dvh;
   width: 100%;
   overflow: hidden;
   background-color: var(--bg-primary);
@@ -38,18 +35,19 @@ body {
   -webkit-user-select: none;
 }
 
-/* App Viewport Container: Enforces full height across browser & standalone PWA */
+/* App Viewport Container: Fixed viewport anchoring guarantees full height in Safari, Chrome & PWA */
 #app-container {
   width: 100%;
   max-width: 480px; /* Centered mobile container on wider screens */
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
   height: 100%;
-  min-height: 100%;
-  min-height: -webkit-fill-available;
-  height: 100dvh;
-  margin: 0 auto;
+  height: -webkit-fill-available;
   display: flex;
   flex-direction: column;
-  position: relative;
   overflow: hidden;
   background-color: var(--bg-primary);
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
@@ -63,10 +61,15 @@ body {
 
 /* Standalone iOS PWA: guarantee container reaches full screen bottom edge */
 @media all and (display-mode: standalone) {
-  html, body, #app-container {
+  html, body {
     height: 100%;
     min-height: 100%;
-    max-height: none;
+  }
+
+  #app-container {
+    height: 100%;
+    top: 0;
+    bottom: 0;
   }
 }
 
