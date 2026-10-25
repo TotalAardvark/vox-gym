@@ -394,6 +394,55 @@ export class StorageManager {
   }
 
   /**
+   * Get all workout history entries for a specific exercise across all dates
+   * Sorted chronologically (oldest to newest)
+   * Returns array of:
+   * {
+   *   date: "YYYY-MM-DD",
+   *   formattedDate: "Thu, Oct 22",
+   *   sets: [...],
+   *   totalSets: number,
+   *   totalVolume: number,
+   *   maxWeight: number
+   * }
+   */
+  getExerciseHistory(exerciseName) {
+    if (!exerciseName) return [];
+    const norm = (str) => (str || "").trim().toLowerCase();
+    const cleanTargetName = norm(exerciseName);
+    const history = this.getWorkoutHistory();
+
+    const sortedDates = Object.keys(history).sort((a, b) => a.localeCompare(b)); // oldest first
+    const results = [];
+
+    for (const d of sortedDates) {
+      const setsForEx = (history[d]?.sets || []).filter(s => norm(s.exercise) === cleanTargetName);
+      if (setsForEx.length > 0) {
+        let maxWeight = 0;
+        let totalVolume = 0;
+
+        for (const s of setsForEx) {
+          const w = s.weight || s.addedWeight || 0;
+          const r = typeof s.reps === "number" ? s.reps : 0;
+          totalVolume += w * r;
+          if (w > maxWeight) maxWeight = w;
+        }
+
+        results.push({
+          date: d,
+          formattedDate: formatHumanDate(d),
+          sets: setsForEx,
+          totalSets: setsForEx.length,
+          totalVolume,
+          maxWeight
+        });
+      }
+    }
+
+    return results;
+  }
+
+  /**
    * Pre-seed realistic historical workout data for immediate comparison
    */
   seedInitialHistory() {

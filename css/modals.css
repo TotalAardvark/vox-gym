@@ -607,3 +607,412 @@
   height: 48px;
   margin-top: 8px;
 }
+
+/* ==========================================================================
+   Exercise Log Modal & Progress Dual-Axis Graph
+   ========================================================================== */
+.exercise-log-modal {
+  max-height: 88vh;
+  height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 18px 16px calc(16px + var(--sab)) 16px;
+  box-sizing: border-box;
+}
+
+.exercise-graph-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 12px 10px 8px 10px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.graph-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.graph-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.legend-max {
+  color: var(--accent-green);
+}
+
+.legend-vol {
+  color: var(--accent-cyan);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-max {
+  background-color: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green-glow);
+}
+
+.dot-vol {
+  background-color: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan-glow);
+}
+
+/* Graph Container & Dual-Axis */
+.exercise-graph-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.graph-canvas-wrapper {
+  display: flex;
+  align-items: stretch;
+  height: 150px;
+  position: relative;
+}
+
+/* Axis Styling */
+.graph-axis-left,
+.graph-axis-right {
+  display: flex;
+  align-items: center;
+  width: 44px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.graph-axis-left {
+  justify-content: flex-end;
+  padding-right: 4px;
+  gap: 4px;
+}
+
+.graph-axis-right {
+  justify-content: flex-start;
+  padding-left: 4px;
+  gap: 4px;
+}
+
+.graph-axis-label {
+  font-size: 0.70rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* Vertical text bottom to top (writing-mode or rotate) */
+.vertical-b2t {
+  color: var(--accent-green);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* Vertical text top to bottom */
+.vertical-t2b {
+  color: var(--accent-cyan);
+  writing-mode: vertical-rl;
+}
+
+.graph-axis-ticks {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 4px 0;
+}
+
+.graph-axis-left .graph-axis-ticks {
+  align-items: flex-end;
+}
+
+.graph-axis-right .graph-axis-ticks {
+  align-items: flex-start;
+}
+
+.graph-tick-val {
+  font-family: var(--font-family-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.graph-axis-left .graph-tick-val {
+  color: rgba(0, 245, 155, 0.85);
+}
+
+.graph-axis-right .graph-tick-val {
+  color: rgba(0, 229, 255, 0.85);
+}
+
+/* SVG wrapper */
+.graph-svg-wrapper {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  background: rgba(0, 0, 0, 0.25);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-medium);
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  overflow: visible;
+  touch-action: none; /* Prevent scroll while scrubbing */
+}
+
+.exercise-graph-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.graph-interaction-layer {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  z-index: 10;
+}
+
+/* Tooltip Popup */
+.graph-tooltip {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(18, 21, 27, 0.95);
+  border: 1px solid var(--border-highlight);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 110px;
+}
+
+.graph-tooltip.visible {
+  opacity: 1;
+}
+
+.graph-tooltip-date {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.graph-tooltip-metrics {
+  display: flex;
+  gap: 8px;
+  font-family: var(--font-family-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.tooltip-val.max-val {
+  color: var(--accent-green);
+}
+
+.tooltip-val.vol-val {
+  color: var(--accent-cyan);
+}
+
+/* X-Axis */
+.graph-x-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 44px;
+  margin-right: 44px;
+  padding-top: 5px;
+}
+
+.graph-x-label {
+  font-family: var(--font-family-mono);
+  font-size: 0.70rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* History Sessions List */
+.exercise-log-history-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.exercise-log-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+.exercise-log-section-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.exercise-log-sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  padding-bottom: 12px;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Individual Session Card in History */
+.log-session-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.log-session-card.expanded {
+  border-color: rgba(0, 245, 155, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.log-session-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.log-session-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.log-session-chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.log-session-card.expanded .log-session-chevron {
+  transform: rotate(90deg);
+  color: var(--accent-green);
+}
+
+.log-session-date {
+  font-size: 0.90rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.log-session-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.log-tag-sets {
+  background: rgba(0, 245, 155, 0.12);
+  color: var(--accent-green);
+  border: 1px solid rgba(0, 245, 155, 0.25);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.log-tag-vol {
+  background: rgba(0, 229, 255, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+/* Collapsible Sets Details */
+.log-session-details {
+  display: none;
+  border-top: 1px solid var(--border-subtle);
+  padding: 10px 14px 12px 14px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.log-session-card.expanded .log-session-details {
+  display: block;
+}
+
+.log-sets-table {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-set-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.log-set-num {
+  font-family: var(--font-family-mono);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  min-width: 44px;
+}
+
+.log-set-data {
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.log-set-vol {
+  font-family: var(--font-family-mono);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}

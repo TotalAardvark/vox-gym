@@ -73,5 +73,13 @@ sm.deleteSet(firstSetId);
 const todaySessionAfterDel = sm.getTodaySession();
 assert(todaySessionAfterDel.sets.length === 1, "1 set remaining after delete");
 
+// 6. Test getExerciseHistory()
+const benchHistory = sm.getExerciseHistory("Barbell Bench Press");
+assert(benchHistory.length >= 2, `Bench press has at least 2 sessions in history (got ${benchHistory.length})`);
+assert(benchHistory[0].date < benchHistory[1].date, "Sessions are sorted chronologically oldest to newest");
+assert(benchHistory[0].maxWeight === 215, `Old session max weight is 215 (got ${benchHistory[0].maxWeight})`);
+assert(benchHistory[benchHistory.length - 1].maxWeight === 225, `Today session max weight is 225 (got ${benchHistory[benchHistory.length - 1].maxWeight})`);
+assert(benchHistory[benchHistory.length - 1].totalVolume === 1800, `Today session volume is 1800 (got ${benchHistory[benchHistory.length - 1].totalVolume})`);
+
 console.log(`\nStorage tests passed: ${passed}, failed: ${failed}`);
 if (failed > 0) process.exit(1);

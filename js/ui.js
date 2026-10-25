@@ -33,6 +33,7 @@ export class UIController {
     this.setupDrawer();
     this.setupConfirmRename();
     this.setupEditSetModal();
+    this.setupExerciseLogModal();
     this.renderHeader();
     this.renderTodaySession();
     this.renderInitialFeedbackCard();
@@ -151,7 +152,28 @@ export class UIController {
       renameExerciseModal: document.getElementById("rename-exercise-modal"),
       customExerciseInput: document.getElementById("custom-exercise-input"),
       customExerciseSaveBtn: document.getElementById("custom-exercise-save-btn"),
-      renameSuggestionsList: document.getElementById("rename-suggestions-list")
+      renameSuggestionsList: document.getElementById("rename-suggestions-list"),
+
+      // Individual Exercise Log Modal
+      exerciseLogModal: document.getElementById("exercise-log-modal"),
+      exerciseLogTitle: document.getElementById("exercise-log-title"),
+      exerciseLogMuscle: document.getElementById("exercise-log-muscle"),
+      exerciseLogCloseBtn: document.getElementById("exercise-log-close-btn"),
+      exerciseLogSessionsList: document.getElementById("exercise-log-sessions-list"),
+      exerciseLogCountPill: document.getElementById("exercise-log-count-pill"),
+      exerciseGraphContainer: document.getElementById("exercise-graph-container"),
+      exerciseGraphSvg: document.getElementById("exercise-graph-svg"),
+      graphInteractionLayer: document.getElementById("graph-interaction-layer"),
+      graphTooltip: document.getElementById("graph-tooltip"),
+      graphTooltipDate: document.getElementById("graph-tooltip-date"),
+      graphTooltipMax: document.getElementById("graph-tooltip-max"),
+      graphTooltipVol: document.getElementById("graph-tooltip-vol"),
+      graphYMaxTop: document.getElementById("graph-y-max-top"),
+      graphYMaxBottom: document.getElementById("graph-y-max-bottom"),
+      graphYVolTop: document.getElementById("graph-y-vol-top"),
+      graphYVolBottom: document.getElementById("graph-y-vol-bottom"),
+      graphXFirstDate: document.getElementById("graph-x-first-date"),
+      graphXLastDate: document.getElementById("graph-x-last-date")
     };
   }
 
@@ -491,12 +513,13 @@ export class UIController {
       });
     });
 
-    // Wire clicking on exercise card to switch top "Last Set Logged" card
+    // Wire clicking on exercise card to open individual Exercise Log (and update top card)
     this.elements.activityList.querySelectorAll(".drawer-exercise-card").forEach(card => {
       card.addEventListener("click", () => {
         const exName = card.getAttribute("data-exercise");
         if (exName) {
           this.updateFeedbackCard(exName);
+          this.openExerciseLogModal(exName);
         }
       });
     });
@@ -1190,6 +1213,378 @@ export class UIController {
     if (this.elements.choiceUnitKg) {
       this.elements.choiceUnitKg.onclick = () => select("kg");
     }
+  }
+
+  // =========================================================================
+  // 11. Individual Exercise Log & Dual-Axis Progress Graph
+  // =========================================================================
+  setupExerciseLogModal() {
+    // Top feedback card click opens Exercise Log for that exercise
+    if (this.elements.feedbackCard) {
+      this.elements.feedbackCard.addEventListener("click", () => {
+        const titleEl = this.elements.feedbackExName;
+        const exName = titleEl ? titleEl.textContent.trim() : null;
+        if (exName) {
+          this.openExerciseLogModal(exName);
+        }
+      });
+    }
+
+    if (this.elements.exerciseLogCloseBtn) {
+      this.elements.exerciseLogCloseBtn.addEventListener("click", () => {
+        this.closeExerciseLogModal();
+      });
+    }
+
+    this.setupGraphInteractions();
+  }
+
+  openExerciseLogModal(exerciseName) {
+    if (!exerciseName) return;
+
+    const prefs = storage.getPreferences();
+    const unit = prefs.unit || "lbs";
+
+    const allExercises = [...EXERCISE_DATABASE, ...storage.getCustomExercises()];
+    const dbEntry = allExercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
+    const muscle = dbEntry ? dbEntry.muscle : "Strength";
+
+    if (this.elements.exerciseLogTitle) {
+      this.elements.exerciseLogTitle.textContent = exerciseName;
+    }
+    if (this.elements.exerciseLogMuscle) {
+      this.elements.exerciseLogMuscle.textContent = muscle;
+    }
+
+    const historySessions = storage.getExerciseHistory(exerciseName);
+
+    if (this.elements.exerciseLogCountPill) {
+      const count = historySessions.length;
+      this.elements.exerciseLogCountPill.textContent = `${count} ${count === 1 ? 'Session' : 'Sessions'}`;
+    }
+
+    // Render Progress Graph
+    this.renderExerciseGraph(historySessions, unit);
+
+    // Render Sessions List (sorted newest first for chronological log list)
+    this.renderExerciseSessionsList(historySessions, unit);
+
+    if (this.elements.exerciseLogModal) {
+      this.elements.exerciseLogModal.classList.add("visible");
+    }
+    if (this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.add("visible");
+    }
+  }
+
+  closeExerciseLogModal() {
+    if (this.elements.exerciseLogModal) {
+      this.elements.exerciseLogModal.classList.remove("visible");
+    }
+    if (this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.remove("visible");
+    }
+    if (this.elements.graphTooltip) {
+      this.elements.graphTooltip.classList.remove("visible");
+    }
+  }
+
+  renderExerciseSessionsList(historySessions, unit) {
+    if (!this.elements.exerciseLogSessionsList) return;
+
+    if (!historySessions || historySessions.length === 0) {
+      this.elements.exerciseLogSessionsList.innerHTML = `
+        <div class="activity-empty-state" style="padding: 24px 0;">
+          <span class="activity-empty-text">No recorded sessions</span>
+          <span class="activity-empty-sub">Log this exercise to track progress over time</span>
+        </div>
+      `;
+      return;
+    }
+
+    // Display list with newest date at the top
+    const displayList = [...historySessions].reverse();
+
+    const formatSetRow = (s, idx) => {
+      const r = s.reps || 0;
+      let wStr = "";
+      if (s.type === "bodyweight" || s.isBodyweight) {
+        wStr = s.addedWeight > 0 ? `+${s.addedWeight} ${s.unit || unit}` : (s.weight > 0 ? `${s.weight} ${s.unit || unit}` : "BW");
+      } else {
+        const w = s.weight || s.addedWeight || 0;
+        wStr = `${w} ${s.unit || unit}`;
+      }
+      const vol = (s.weight || s.addedWeight || 0) * r;
+      return `
+        <div class="log-set-row">
+          <span class="log-set-num">Set ${idx + 1}</span>
+          <span class="log-set-data">${wStr} × ${r}</span>
+          <span class="log-set-vol">${vol > 0 ? `${vol.toLocaleString()} ${unit}` : ''}</span>
+        </div>
+      `;
+    };
+
+    this.elements.exerciseLogSessionsList.innerHTML = displayList.map(session => {
+      const setsHtml = session.sets.map((s, idx) => formatSetRow(s, idx)).join("");
+      return `
+        <div class="log-session-card" data-date="${session.date}">
+          <div class="log-session-header">
+            <div class="log-session-left">
+              <svg class="log-session-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+              <span class="log-session-date">${session.formattedDate}</span>
+            </div>
+            <div class="log-session-tags">
+              <span class="log-tag-sets">${session.totalSets} ${session.totalSets === 1 ? 'set' : 'sets'}</span>
+              <span class="log-tag-vol">${session.totalVolume.toLocaleString()} ${unit}</span>
+            </div>
+          </div>
+          <div class="log-session-details">
+            <div class="log-sets-table">
+              ${setsHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // Wire tap date to toggle expand/collapse sets
+    this.elements.exerciseLogSessionsList.querySelectorAll(".log-session-header").forEach(header => {
+      header.addEventListener("click", () => {
+        const card = header.closest(".log-session-card");
+        if (card) {
+          card.classList.toggle("expanded");
+        }
+      });
+    });
+  }
+
+  renderExerciseGraph(historySessions, unit) {
+    this.activeGraphSessions = historySessions || [];
+
+    const svg = this.elements.exerciseGraphSvg;
+    if (!svg) return;
+
+    if (!historySessions || historySessions.length === 0) {
+      if (this.elements.graphYMaxTop) this.elements.graphYMaxTop.textContent = "--";
+      if (this.elements.graphYMaxBottom) this.elements.graphYMaxBottom.textContent = "--";
+      if (this.elements.graphYVolTop) this.elements.graphYVolTop.textContent = "--";
+      if (this.elements.graphYVolBottom) this.elements.graphYVolBottom.textContent = "--";
+      if (this.elements.graphXFirstDate) this.elements.graphXFirstDate.textContent = "--";
+      if (this.elements.graphXLastDate) this.elements.graphXLastDate.textContent = "--";
+      svg.innerHTML = `
+        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#64748b" font-size="11" font-family="-apple-system, sans-serif">
+          No workout data yet
+        </text>
+      `;
+      return;
+    }
+
+    // Date range labels (First & Last only)
+    const firstDateStr = historySessions[0].formattedDate;
+    const lastDateStr = historySessions[historySessions.length - 1].formattedDate;
+    if (this.elements.graphXFirstDate) this.elements.graphXFirstDate.textContent = firstDateStr;
+    if (this.elements.graphXLastDate) this.elements.graphXLastDate.textContent = lastDateStr;
+
+    // Calculate Y-axis bounds
+    const maxWeights = historySessions.map(s => s.maxWeight);
+    const volumes = historySessions.map(s => s.totalVolume);
+
+    let rawMaxW = Math.max(...maxWeights, 0);
+    let rawMinW = Math.min(...maxWeights);
+    if (rawMinW === rawMaxW) rawMinW = Math.max(0, rawMaxW - 10);
+    let topMaxW = Math.ceil(rawMaxW > 0 ? rawMaxW * 1.05 : 100);
+    let bottomMaxW = Math.floor(Math.max(0, rawMinW * 0.9));
+
+    let rawMaxV = Math.max(...volumes, 0);
+    let rawMinV = Math.min(...volumes);
+    if (rawMinV === rawMaxV) rawMinV = Math.max(0, rawMaxV - 100);
+    let topVol = Math.ceil(rawMaxV > 0 ? rawMaxV * 1.1 : 1000);
+    let bottomVol = Math.floor(Math.max(0, rawMinV * 0.85));
+
+    // Update Y-Axis number labels
+    if (this.elements.graphYMaxTop) this.elements.graphYMaxTop.textContent = topMaxW.toLocaleString();
+    if (this.elements.graphYMaxBottom) this.elements.graphYMaxBottom.textContent = bottomMaxW.toLocaleString();
+    if (this.elements.graphYVolTop) this.elements.graphYVolTop.textContent = topVol.toLocaleString();
+    if (this.elements.graphYVolBottom) this.elements.graphYVolBottom.textContent = bottomVol.toLocaleString();
+
+    // SVG coordinates
+    const W = 320;
+    const H = 150;
+    const padTop = 15;
+    const padBottom = 15;
+    const padLeft = 10;
+    const padRight = 10;
+    const chartW = W - padLeft - padRight;
+    const chartH = H - padTop - padBottom;
+
+    const n = historySessions.length;
+
+    // Calculate points for Max Weight and Volume
+    const pointsMax = [];
+    const pointsVol = [];
+    this.graphPointsData = [];
+
+    for (let i = 0; i < n; i++) {
+      const s = historySessions[i];
+      const x = n === 1 ? W / 2 : padLeft + (i / (n - 1)) * chartW;
+
+      // Y for Max Weight
+      const maxWNorm = topMaxW === bottomMaxW ? 0.5 : (s.maxWeight - bottomMaxW) / (topMaxW - bottomMaxW);
+      const yMax = padTop + (1 - Math.max(0, Math.min(1, maxWNorm))) * chartH;
+
+      // Y for Volume
+      const volNorm = topVol === bottomVol ? 0.5 : (s.totalVolume - bottomVol) / (topVol - bottomVol);
+      const yVol = padTop + (1 - Math.max(0, Math.min(1, volNorm))) * chartH;
+
+      pointsMax.push({ x, y: yMax });
+      pointsVol.push({ x, y: yVol });
+      this.graphPointsData.push({
+        x,
+        yMax,
+        yVol,
+        session: s
+      });
+    }
+
+    // Build SVG paths
+    const makePath = (pts) => {
+      if (pts.length === 0) return "";
+      if (pts.length === 1) return `M ${pts[0].x - 6} ${pts[0].y} L ${pts[0].x + 6} ${pts[0].y}`;
+      return pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+    };
+
+    const pathMaxStr = makePath(pointsMax);
+    const pathVolStr = makePath(pointsVol);
+
+    // SVG elements
+    let svgContent = `
+      <defs>
+        <linearGradient id="grid-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="rgba(255,255,255,0.06)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0.01)"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Horizontal reference lines -->
+      <line x1="${padLeft}" y1="${padTop}" x2="${W - padRight}" y2="${padTop}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"/>
+      <line x1="${padLeft}" y1="${padTop + chartH / 2}" x2="${W - padRight}" y2="${padTop + chartH / 2}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"/>
+      <line x1="${padLeft}" y1="${H - padBottom}" x2="${W - padRight}" y2="${H - padBottom}" stroke="rgba(255,255,255,0.08)"/>
+
+      <!-- Volume line (Cyan) -->
+      <path d="${pathVolStr}" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Max Weight line (Neon Green) -->
+      <path d="${pathMaxStr}" fill="none" stroke="#00f59b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    `;
+
+    // Add dots for each session point
+    for (const p of this.graphPointsData) {
+      svgContent += `
+        <!-- Vol Dot -->
+        <circle cx="${p.x.toFixed(1)}" cy="${p.yVol.toFixed(1)}" r="3.5" fill="#00e5ff" stroke="#0a0c0f" stroke-width="1.5"/>
+        <!-- Max Dot -->
+        <circle cx="${p.x.toFixed(1)}" cy="${p.yMax.toFixed(1)}" r="3.5" fill="#00f59b" stroke="#0a0c0f" stroke-width="1.5"/>
+      `;
+    }
+
+    // Dynamic hover indicator element
+    svgContent += `<line id="graph-cursor-line" x1="0" y1="0" x2="0" y2="${H}" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="2 2" style="opacity:0; transition:opacity 0.15s ease;"/>`;
+
+    svg.innerHTML = svgContent;
+  }
+
+  setupGraphInteractions() {
+    const layer = this.elements.graphInteractionLayer;
+    if (!layer) return;
+
+    let isHolding = false;
+
+    const handlePointerMove = (clientX) => {
+      if (!this.graphPointsData || this.graphPointsData.length === 0) return;
+
+      const rect = layer.getBoundingClientRect();
+      const relativeX = clientX - rect.left;
+      const normalizedRatio = Math.max(0, Math.min(1, relativeX / rect.width));
+      const targetSvgX = normalizedRatio * 320;
+
+      // Find nearest data point
+      let nearest = this.graphPointsData[0];
+      let minDiff = Math.abs(this.graphPointsData[0].x - targetSvgX);
+
+      for (let i = 1; i < this.graphPointsData.length; i++) {
+        const diff = Math.abs(this.graphPointsData[i].x - targetSvgX);
+        if (diff < minDiff) {
+          minDiff = diff;
+          nearest = this.graphPointsData[i];
+        }
+      }
+
+      if (!nearest) return;
+
+      const prefs = storage.getPreferences();
+      const unit = prefs.unit || "lbs";
+
+      // Position Tooltip
+      if (this.elements.graphTooltip) {
+        const tooltipX = (nearest.x / 320) * rect.width;
+        this.elements.graphTooltip.style.left = `${tooltipX}px`;
+        this.elements.graphTooltip.classList.add("visible");
+      }
+
+      if (this.elements.graphTooltipDate) {
+        this.elements.graphTooltipDate.textContent = nearest.session.formattedDate;
+      }
+      if (this.elements.graphTooltipMax) {
+        this.elements.graphTooltipMax.textContent = `Max: ${nearest.session.maxWeight} ${unit}`;
+      }
+      if (this.elements.graphTooltipVol) {
+        this.elements.graphTooltipVol.textContent = `Vol: ${nearest.session.totalVolume.toLocaleString()} ${unit}`;
+      }
+
+      // Cursor line in SVG
+      const cursorLine = document.getElementById("graph-cursor-line");
+      if (cursorLine) {
+        cursorLine.setAttribute("x1", nearest.x.toFixed(1));
+        cursorLine.setAttribute("x2", nearest.x.toFixed(1));
+        cursorLine.style.opacity = "1";
+      }
+    };
+
+    const handlePointerEnd = () => {
+      isHolding = false;
+      if (this.elements.graphTooltip) {
+        this.elements.graphTooltip.classList.remove("visible");
+      }
+      const cursorLine = document.getElementById("graph-cursor-line");
+      if (cursorLine) {
+        cursorLine.style.opacity = "0";
+      }
+    };
+
+    // Pointer events (works for mouse and touch seamlessly)
+    layer.addEventListener("pointerdown", (e) => {
+      isHolding = true;
+      layer.setPointerCapture(e.pointerId);
+      handlePointerMove(e.clientX);
+    });
+
+    layer.addEventListener("pointermove", (e) => {
+      if (isHolding) {
+        handlePointerMove(e.clientX);
+      }
+    });
+
+    layer.addEventListener("pointerup", (e) => {
+      try { layer.releasePointerCapture(e.pointerId); } catch (_) {}
+      handlePointerEnd();
+    });
+
+    layer.addEventListener("pointercancel", (e) => {
+      try { layer.releasePointerCapture(e.pointerId); } catch (_) {}
+      handlePointerEnd();
+    });
   }
 }
 

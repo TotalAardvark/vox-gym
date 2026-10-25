@@ -181,6 +181,12 @@
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.feedback-card:hover {
+  border-color: rgba(0, 245, 155, 0.35);
 }
 
 .feedback-card::before {
