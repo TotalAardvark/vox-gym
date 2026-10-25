@@ -5,7 +5,7 @@
  * with graceful cache fallback when offline.
  */
 
-const CACHE_NAME = "vox-gym-cache-v15";
+const CACHE_NAME = "vox-gym-cache-v22";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
@@ -15,6 +15,7 @@ const ASSETS_TO_CACHE = [
   "./css/components.css",
   "./css/modals.css",
   "./js/app.js",
+  "./js/spotify.js",
   "./js/exercises.js",
   "./js/fuzzy.js",
   "./js/nlp-parser.js",

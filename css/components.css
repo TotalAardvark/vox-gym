@@ -640,8 +640,8 @@ button.flow-set-item.highlight-latest {
 /* Ripple Soundwave Animation Container */
 .soundwaves-container {
   position: absolute;
-  width: 180px;
-  height: 180px;
+  width: 360px;
+  height: 360px;
   border-radius: var(--radius-full);
   pointer-events: none;
   display: flex;
@@ -680,12 +680,12 @@ button.flow-set-item.highlight-latest {
   }
 }
 
-/* Main Push-To-Talk Button: large 112x112px circle */
+/* Main Push-To-Talk Button: large 224x224px circle (doubled from 112px) */
 .ptt-button {
-  width: 112px;
-  height: 112px;
-  min-width: 112px;
-  min-height: 112px;
+  width: 224px;
+  height: 224px;
+  min-width: 224px;
+  min-height: 224px;
   border-radius: var(--radius-full);
   background: var(--ptt-bg-idle);
   border: 2px solid var(--border-medium);
@@ -742,8 +742,8 @@ button.flow-set-item.highlight-latest {
 .ptt-icon,
 .ptt-mic-icon,
 .ptt-dumbbell-icon {
-  width: 44px;
-  height: 44px;
+  width: 88px;
+  height: 88px;
   color: var(--accent-green);
   transition: color 0.2s ease;
 }
