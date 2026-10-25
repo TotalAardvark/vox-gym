@@ -5,7 +5,7 @@
  * with graceful cache fallback when offline.
  */
 
-const CACHE_NAME = "vox-gym-cache-v22";
+const CACHE_NAME = "vox-gym-cache-v23";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
