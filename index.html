@@ -16,10 +16,10 @@
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 
   <!-- Stylesheets with Cache Busting -->
-  <link rel="stylesheet" href="css/variables.css?v=12">
-  <link rel="stylesheet" href="css/base.css?v=12">
-  <link rel="stylesheet" href="css/components.css?v=12">
-  <link rel="stylesheet" href="css/modals.css?v=12">
+  <link rel="stylesheet" href="css/variables.css?v=13">
+  <link rel="stylesheet" href="css/base.css?v=13">
+  <link rel="stylesheet" href="css/components.css?v=13">
+  <link rel="stylesheet" href="css/modals.css?v=13">
 </head>
 <body>
 
@@ -122,11 +122,15 @@
 
           <!-- Central Push-To-Talk Button -->
           <button id="ptt-button" class="ptt-button idle" aria-label="Push to Talk: Tap or hold to speak gym set" title="Tap or hold to speak">
-            <svg class="ptt-mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
+            <svg class="ptt-icon ptt-dumbbell-icon" viewBox="0 0 24 24" fill="currentColor">
+              <!-- Left weight plates -->
+              <rect x="2" y="7" width="2.5" height="10" rx="1" />
+              <rect x="5.5" y="5.5" width="2.5" height="13" rx="1" />
+              <!-- Center knurled bar -->
+              <rect x="8" y="10.5" width="8" height="3" rx="0.5" />
+              <!-- Right weight plates -->
+              <rect x="16" y="5.5" width="2.5" height="13" rx="1" />
+              <rect x="19.5" y="7" width="2.5" height="10" rx="1" />
             </svg>
           </button>
         </div>
@@ -543,6 +547,6 @@
   </div>
 
   <!-- Modular Scripts -->
-  <script type="module" src="js/app.js?v=12"></script>
+  <script type="module" src="js/app.js?v=13"></script>
 </body>
 </html>
