@@ -908,13 +908,18 @@ button.flow-set-item.highlight-latest {
   z-index: 25;
 }
 
-/* Collapsed state: anchored inside safe-padded container */
+/* Collapsed state: occupies compact bottom strip showing only header tab */
 .workout-drawer.collapsed {
-  flex-shrink: 0;
-  min-height: 56px;
+  height: calc(58px + var(--sab));
+  max-height: calc(58px + var(--sab));
+  padding-bottom: var(--sab);
   position: relative;
   overflow: visible; /* Allows upward arrow handle to protrude proudly */
   box-shadow: var(--drawer-shadow);
+}
+
+.workout-drawer.collapsed .drawer-scroll-body {
+  display: none;
 }
 
 /* Expanded state: slides up to stop below header */
