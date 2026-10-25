@@ -1,106 +1,94 @@
-# Vox Gym 🎙️💪 • Voice-First Workout Tracker
+# Vox Gym 🎙️💪
+### *Log your workout without putting your weights down.*
 
-A mobile web application designed to simplify gym workout logging through hands-free, real-time voice input. Built for mobile browser viewports (iOS Safari & Android Chrome) and ready for zero-build deployment on **GitHub Pages**.
+Stop fiddling with your phone between heavy sets. No tiny keyboards with chalky hands, no hunting through 500-exercise dropdown menus, and no losing your pump. 
 
----
-
-## 📱 Live Highlights & Core Specifications
-
-### 1. Viewport & Touch Ergonomics
-- **Dynamic Viewport Height (`100dvh`):** Enforces strict `100dvh` layout rules with safe-area insets (`env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`) to eliminate screen jumping when mobile browser address bars collapse or expand.
-- **Touch Target Accessibility:** All interactive elements (Push-to-Talk button, media controls, steppers, toggle pills) strictly adhere to $\ge 48 \times 48\text{px}$ touch targets.
-
-### 2. Speech Recognition & Intent Parser (`SpeechRecognition` / `webkitSpeechRecognition`)
-- **Push-to-Talk (PTT):** Supports both **Tap-to-Listen** and **Hold-to-Speak** gestures with soundwave ripple animations.
-- **Natural Language Command Engine:**
-  - **Standard Sets:** *"Bench press 225 pounds for 8 reps"* $\rightarrow$ `{ exercise: "Barbell Bench Press", weight: 225, reps: 8 }`
-  - **Relative Sets:** *"Same as last set"* (duplicates previous weight & reps), *"Add 5 pounds for 10 reps"*, *"Minus 10 lbs 8 reps"*.
-  - **Drop Sets:** *"Drop set on Cable Flyes: 60 pounds for 8, 40 for 10, 20 to failure"* $\rightarrow$ creates linked sub-set drops.
-  - **Bodyweight Sets:** *"Dips 15 reps with 25 pounds"*, *"Pull ups 10 reps bodyweight"*.
-  - **Timed/Distance:** *"Plank for 60 seconds"*, *"Treadmill 1 mile in 8 mins"*.
-  - **Automatic Unit Conversion:** Auto-converts spoken units (e.g. speaking *"100 kg"* when preference is `lbs` auto-converts to `220.5 lbs`).
-  - **Missing Parameter Fallback Drawer:** If a command lacks required parameters (e.g., *"Squats 225 pounds"* missing reps), a bottom drawer slides up asking *"How many reps for Squats at 225 lbs?"* with quick-select pills.
-
-### 3. Fuzzy Matching & Alias Normalization (Levenshtein + Token Similarity)
-- Normalizes gym shorthand to official exercises:
-  - `DB Fly` $\rightarrow$ `Dumbbell Fly`
-  - `Incline DB` $\rightarrow$ `Incline Dumbbell Press`
-  - `RDL` $\rightarrow$ `Romanian Deadlift`
-  - `OHP` $\rightarrow$ `Overhead Press`
-  - `Squats` $\rightarrow$ `Barbell Back Squat`
-  - `Bench` $\rightarrow$ `Barbell Bench Press`
-  - `Curls` $\rightarrow$ `Bicep Curls`
-- **Ambiguity Drawer:** If confidence is $< 80\%$ or top matches are close, slides up a bottom drawer card showing the top 3 best matching exercises for single-tap disambiguation.
-
-### 4. 4-Second "Color Crawl" Confirmation Modal
-- **Visual Progress Crawl:** Animated horizontal bar smoothly fills across the bottom of the modal over 4.0 seconds using `requestAnimationFrame`.
-- **No Manual Touch:** At 4.0s (100%), displays **"CONFIRMED"** status state, triggers `navigator.vibrate([50])` haptic burst, plays audio confirmation chime, closes modal, and commits set.
-- **Touch Interruption:** Touching any `[ - ]` / `[ + ]` stepper instantly pauses the timer indefinitely and presents explicit **"Confirm Set"** and **"Discard"** buttons.
-
-### 5. Immediate Comparative Feedback Card
-- Real-time stats for the active exercise:
-  - **This Session:** Set count and cumulative volume (e.g., *"Set 3 • Volume: 5,400 lbs"*).
-  - **Last Session Summary:** Comparison against previous workout (e.g., *"Last Workout (Oct 19): 215 lbs × 8, 8, 7"*).
-  - **Micro-Trend Indicator:** Directional status badge (e.g., `+10 lbs vs last session ↗️`, `Equal to last session ➡️`, `Target: beat 215 lbs 🎯`).
-
-### 6. HTML5 Media Session API Integration
-- Fully wired to `navigator.mediaSession` with lock screen / notification center audio controls.
-- Controls: **Play**, **Pause**, **Previous Track**, **Next Track**, and **Mute**.
-- Synthesizes dynamic ambient workout beats using Web Audio API so native media sessions activate on mobile browsers.
-
-### 7. Data Persistence & Offline PWA
-- Persists all workout history, preferences, and daily logs in `localStorage`.
-- Includes `manifest.json` and `sw.js` (Service Worker) for standalone PWA installation and offline capabilities.
-- Pre-seeded with realistic workout history for immediate comparative testing.
+**Vox Gym** is a voice-first workout companion that lets you talk your sets into existence while your music keeps playing.
 
 ---
 
-## 🚀 Quick Start & Local Testing
+## 🚀 Why Lifters Love Vox Gym
 
-### Run Locally:
-```bash
-# Start a simple HTTP server
-python3 -m http.server 8080
+### 🗣️ Just Speak Your Set
+Say it naturally like you’d tell your gym buddy:
+- *"Bench press 225 pounds for 8 reps"*
+- *"Add 5 pounds for 10 reps"*
+- *"Same as last set"*
+- *"Drop set on Cable Flyes: 60 pounds for 8, 40 for 10, 20 to failure"*
+- *"Dips 15 reps with 25 pounds"*
+- *"Plank for 60 seconds"*
 
-# Or with Node
-npx serve .
-```
-Open `http://localhost:8080` in your browser.
+### ⚡ True Zero-Friction (The 4-Second Rule)
+Don't want to touch your screen? You don't have to.
+After you speak, a visual 4-second timer crawls across the screen. If it looks right, do nothing—it auto-locks into your workout log, sends a subtle vibration pulse, and dismisses itself so you can rest. Want to tweak a rep? Just tap `+` or `-` to adjust.
 
-### Run Automated Unit Test Suite:
-```bash
-node tests/test-engine.mjs
-node tests/test-storage.mjs
-```
+### 🧠 It Knows Gym Slang
+You don't need to say *"Barbell Incline Bench Press"*. Vox Gym knows what you mean:
+- *"Incline DB 70 for 10"* $\rightarrow$ **Incline Dumbbell Press**
+- *"RDL 225 for 8"* $\rightarrow$ **Romanian Deadlift**
+- *"OHP 135 for 5"* $\rightarrow$ **Overhead Press**
+- *"Squats 315 for 5"* $\rightarrow$ **Barbell Back Squat**
 
----
+### 🎧 Built-in Spotify Control + Auto-Ducking
+Never fumble between your music app and your workout log again:
+- See what’s playing, skip tracks, and pause directly inside the app.
+- When you tap to speak, Vox Gym automatically ducks your music so your phone hears you clearly over loud gym speakers.
 
-## 🌐 Deploy to GitHub Pages (Zero-Build)
-
-Because Vox Gym uses native ES modules and standard web standards, no build step (`npm run build`) is required:
-
-1. Push this repository to GitHub:
-   ```bash
-   git add .
-   git commit -m "Initial Vox Gym Stage 1 prototype"
-   git remote add origin https://github.com/<your-username>/<your-repo>.git
-   git push -u origin main
-   ```
-2. On GitHub, navigate to **Settings** $\rightarrow$ **Pages**.
-3. Under **Build and deployment** $\rightarrow$ **Source**, select **Deploy from a branch**.
-4. Choose `main` branch and `/ (root)` directory, then click **Save**.
-5. Your live PWA URL will be available at `https://<your-username>.github.io/<your-repo>/`.
+### 📈 Instant Progress Comparison
+Right after you log a set, Vox Gym tells you exactly how you performed compared to last week:
+- *“+10 lbs vs last session ↗️”*
+- *“Equal to last session ➡️”*
+- *“Target: beat 215 lbs 🎯”*
 
 ---
 
-## 🏋️ Preset Voice Commands for Testing
-On the main screen, use the horizontal scrollable chips to test voice commands without speaking:
-- `Bench press 225 pounds for 8 reps`
-- `Add 5 pounds for 10 reps` *(Relative progression)*
-- `Same as last set` *(Duplicate)*
-- `Drop set on Cable Flyes: 60 pounds for 8, 40 for 10, 20 to failure` *(Multi-drop)*
-- `Dips 15 reps with 25 pounds` *(Bodyweight + added weight)*
-- `Plank for 60 seconds` *(Timed)*
-- `Squats 225 pounds` *(Triggers missing reps drawer)*
-- `Incline DB 70 for 10` *(Fuzzy normalization)*
-- `Bench press 100 kg for 8 reps` *(Unit auto-conversion)*
+## 📲 Install on Your Phone in 10 Seconds
+
+Vox Gym is an ultra-fast Progressive Web App (PWA). No App Store download needed, zero ads, zero subscriptions, and works offline in basement gyms.
+
+### 🍏 iPhone (Safari)
+1. Open [`https://totalaardvark.github.io/vox-gym/`](https://totalaardvark.github.io/vox-gym/) in **Safari**.
+2. Tap the **Share** button (the square with an arrow pointing up at the bottom).
+3. Scroll down and tap **Add to Home Screen**.
+4. Tap **Add** in the top right. Vox Gym is now an app on your home screen!
+
+### 🤖 Android (Chrome)
+1. Open [`https://totalaardvark.github.io/vox-gym/`](https://totalaardvark.github.io/vox-gym/) in **Chrome**.
+2. Tap the **three dots** (top right).
+3. Tap **Install app** (or **Add to Home Screen**).
+
+---
+
+## 🎵 Connecting Your Spotify (One-Time Setup)
+
+To enable live music playback and track controls:
+1. In the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard), open your app settings.
+2. Add your redirect URI: `https://totalaardvark.github.io/vox-gym/`
+3. Hit save.
+4. Open Vox Gym, start playing a song in Spotify on your phone, and tap the Spotify pill in the app to connect!
+
+---
+
+<details>
+<summary>🛠️ <b>Under the Hood (Nerd & Developer Details)</b></summary>
+
+<br>
+
+- **Architecture:** Zero-build, pure vanilla ES6+ web modules. Runs seamlessly via standard static file hosting.
+- **Speech Engine:** Web Speech API (`webkitSpeechRecognition`) with continuous push-to-talk stream processing.
+- **NLP & Parsing:** Custom lexical tokenizer with regex patterns supporting relative progression, drop sets, multi-unit conversions (`kg` $\leftrightarrow$ `lbs`), and bodyweight modifier detection.
+- **Fuzzy Matching:** Levenshtein distance combined with token similarity matching against pre-indexed exercise alias dictionaries.
+- **Spotify Connect:** Client-side OAuth 2.0 with PKCE (Proof Key for Code Exchange) flow via Web Crypto API. No server secrets or backend required.
+- **Storage & Offline:** 100% client-side `localStorage` data persistence with Service Worker cache (`sw.js`) and dynamic `100dvh` viewport handling.
+- **Testing:** Comprehensive test suite in `/tests` for intent parsing, fuzzy matching, and storage migrations.
+  ```bash
+  node tests/test-engine.mjs
+  node tests/test-storage.mjs
+  ```
+
+</details>
+
+---
+
+## 📄 License
+MIT © TotalAardvark
