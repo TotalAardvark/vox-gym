@@ -119,6 +119,8 @@ export class UIController {
       settingsModal: document.getElementById("settings-modal"),
       settingsBtn: document.getElementById("settings-btn"),
       closeSettingsBtn: document.getElementById("close-settings-btn"),
+      themeBtnLight: document.getElementById("theme-btn-light"),
+      themeBtnDark: document.getElementById("theme-btn-dark"),
       settingsUnitLbs: document.getElementById("settings-unit-lbs"),
       settingsUnitKg: document.getElementById("settings-unit-kg"),
       restDurationInput: document.getElementById("rest-duration-input"),
@@ -190,6 +192,20 @@ export class UIController {
     if (this.elements.settingsUnitLbs && this.elements.settingsUnitKg) {
       this.elements.settingsUnitLbs.classList.toggle("active", prefs.unit === "lbs");
       this.elements.settingsUnitKg.classList.toggle("active", prefs.unit === "kg");
+    }
+    this.applyTheme(prefs.theme || "light");
+  }
+
+  applyTheme(theme) {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.setAttribute("data-theme", "dark");
+    } else {
+      root.removeAttribute("data-theme");
+    }
+    if (this.elements.themeBtnLight && this.elements.themeBtnDark) {
+      this.elements.themeBtnLight.classList.toggle("active", theme !== "dark");
+      this.elements.themeBtnDark.classList.toggle("active", theme === "dark");
     }
   }
 

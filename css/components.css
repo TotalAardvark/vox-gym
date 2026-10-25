@@ -446,9 +446,9 @@ button.flow-set-item.highlight-latest {
   min-width: 112px;
   min-height: 112px;
   border-radius: var(--radius-full);
-  background: linear-gradient(145deg, #1a2230, #0f1520);
+  background: var(--ptt-bg-idle);
   border: 2px solid var(--border-medium);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-md), inset 0 1px 1px rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -465,12 +465,12 @@ button.flow-set-item.highlight-latest {
 /* PTT States */
 .ptt-button.idle {
   border-color: var(--accent-green-glow);
-  box-shadow: 0 0 18px rgba(0, 245, 155, 0.2);
+  box-shadow: 0 0 18px var(--accent-green-glow);
 }
 
 .ptt-button.listening {
   border-color: var(--accent-green);
-  background: linear-gradient(145deg, #0e2a20, #081a13);
+  background: var(--ptt-bg-listening);
   box-shadow: 0 0 35px var(--accent-green-glow);
   transform: scale(1.05);
 }
@@ -690,7 +690,7 @@ button.flow-set-item.highlight-latest {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--bg-secondary);
+  background: var(--drawer-header-bg);
   border-bottom: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   user-select: none;
@@ -706,11 +706,11 @@ button.flow-set-item.highlight-latest {
   transform: translateX(-50%);
   width: 44px;
   height: 22px;
-  background: var(--bg-secondary);
+  background: var(--drawer-header-bg);
   border: 1px solid var(--border-medium);
   border-bottom: none;
   border-radius: 14px 14px 0 0;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
   color: var(--accent-green);
   cursor: pointer;
   z-index: 5;

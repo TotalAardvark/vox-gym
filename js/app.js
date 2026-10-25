@@ -258,6 +258,19 @@ class VoxGymApp {
   // Header, Preferences & Settings
   // =========================================================================
   setupHeaderAndSettings() {
+    // Theme selection (Light / Dark)
+    const updateThemePreference = (newTheme) => {
+      storage.savePreferences({ theme: newTheme });
+      ui.applyTheme(newTheme);
+    };
+
+    if (ui.elements.themeBtnLight) {
+      ui.elements.themeBtnLight.addEventListener("click", () => updateThemePreference("light"));
+    }
+    if (ui.elements.themeBtnDark) {
+      ui.elements.themeBtnDark.addEventListener("click", () => updateThemePreference("dark"));
+    }
+
     // Settings Unit Selection Buttons (LBS / KG)
     const updateUnitPreference = (newUnit) => {
       storage.savePreferences({ unit: newUnit, unitChosen: true });
@@ -389,7 +402,7 @@ class VoxGymApp {
   // Service Worker Registration for PWA / GitHub Pages
   // =========================================================================
   registerServiceWorker() {
-    if ("serviceWorker" in navigator && (window.location.protocol === "https:" || window.location.hostname === "localhost")) {
+    if ("serviceWorker" in navigator && (window.location.protocol === "https:" || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
       navigator.serviceWorker.register("sw.js")
         .then(reg => {
           console.log("ServiceWorker registered successfully:", reg.scope);

@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_PREFERENCES = {
+  theme: "light", // "light" (default) or "dark"
   unit: "lbs", // "lbs" or "kg"
   unitChosen: false,
   restTimerEnabled: true,
