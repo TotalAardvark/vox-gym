@@ -1493,19 +1493,24 @@ export class UIController {
     const pathMaxStr = makePath(pointsMax);
     const pathVolStr = makePath(pointsVol);
 
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    const gridLineColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)";
+    const baseLineColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)";
+    const dotStrokeColor = isDark ? "#0a0c0f" : "#ffffff";
+
     // SVG elements
     let svgContent = `
       <defs>
         <linearGradient id="grid-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="rgba(255,255,255,0.06)"/>
-          <stop offset="100%" stop-color="rgba(255,255,255,0.01)"/>
+          <stop offset="0%" stop-color="${gridLineColor}"/>
+          <stop offset="100%" stop-color="transparent"/>
         </linearGradient>
       </defs>
 
       <!-- Horizontal reference lines -->
-      <line x1="${padLeft}" y1="${padTop}" x2="${W - padRight}" y2="${padTop}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"/>
-      <line x1="${padLeft}" y1="${padTop + chartH / 2}" x2="${W - padRight}" y2="${padTop + chartH / 2}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"/>
-      <line x1="${padLeft}" y1="${H - padBottom}" x2="${W - padRight}" y2="${H - padBottom}" stroke="rgba(255,255,255,0.08)"/>
+      <line x1="${padLeft}" y1="${padTop}" x2="${W - padRight}" y2="${padTop}" stroke="${gridLineColor}" stroke-dasharray="3 3"/>
+      <line x1="${padLeft}" y1="${padTop + chartH / 2}" x2="${W - padRight}" y2="${padTop + chartH / 2}" stroke="${gridLineColor}" stroke-dasharray="3 3"/>
+      <line x1="${padLeft}" y1="${H - padBottom}" x2="${W - padRight}" y2="${H - padBottom}" stroke="${baseLineColor}"/>
 
       <!-- Volume line (Cyan) -->
       <path d="${pathVolStr}" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1518,9 +1523,9 @@ export class UIController {
     for (const p of this.graphPointsData) {
       svgContent += `
         <!-- Vol Dot -->
-        <circle cx="${p.x.toFixed(1)}" cy="${p.yVol.toFixed(1)}" r="3.5" fill="#00e5ff" stroke="#0a0c0f" stroke-width="1.5"/>
+        <circle cx="${p.x.toFixed(1)}" cy="${p.yVol.toFixed(1)}" r="3.5" fill="#00e5ff" stroke="${dotStrokeColor}" stroke-width="1.5"/>
         <!-- Max Dot -->
-        <circle cx="${p.x.toFixed(1)}" cy="${p.yMax.toFixed(1)}" r="3.5" fill="#00f59b" stroke="#0a0c0f" stroke-width="1.5"/>
+        <circle cx="${p.x.toFixed(1)}" cy="${p.yMax.toFixed(1)}" r="3.5" fill="#00f59b" stroke="${dotStrokeColor}" stroke-width="1.5"/>
       `;
     }
 

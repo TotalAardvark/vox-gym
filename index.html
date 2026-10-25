@@ -16,10 +16,10 @@
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 
   <!-- Stylesheets with Cache Busting -->
-  <link rel="stylesheet" href="css/variables.css?v=24">
-  <link rel="stylesheet" href="css/base.css?v=24">
-  <link rel="stylesheet" href="css/components.css?v=24">
-  <link rel="stylesheet" href="css/modals.css?v=24">
+  <link rel="stylesheet" href="css/variables.css?v=26">
+  <link rel="stylesheet" href="css/base.css?v=26">
+  <link rel="stylesheet" href="css/components.css?v=26">
+  <link rel="stylesheet" href="css/modals.css?v=26">
 </head>
 <body>
 
@@ -346,7 +346,12 @@
     <div class="drawer-drag-pill"></div>
     <div class="settings-header">
       <h3 class="settings-title">Vox Gym Settings</h3>
-      <button id="close-settings-btn" class="close-settings-btn" aria-label="Close settings">✕</button>
+      <button id="close-settings-btn" class="modal-close-icon-btn" aria-label="Close settings" title="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
 
     <div class="setting-item">
@@ -471,7 +476,12 @@
       <div class="confirm-title-wrapper">
         <h3 id="edit-set-title" class="confirm-exercise-title">Edit Set</h3>
       </div>
-      <button id="edit-set-close-btn" class="close-settings-btn" aria-label="Close set editor">✕</button>
+      <button id="edit-set-close-btn" class="modal-close-icon-btn" aria-label="Close set editor" title="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
     </div>
 
     <div class="steppers-grid">
@@ -502,25 +512,27 @@
       </div>
     </div>
 
-    <div class="manual-confirm-actions" style="margin-top: 18px;">
-      <button id="edit-set-cancel-btn" class="btn-confirm-action btn-confirm-discard">Cancel</button>
-      <button id="edit-set-save-btn" class="btn-confirm-action btn-confirm-primary">Save Changes</button>
-    </div>
-
-    <div class="edit-modal-secondary-actions" style="display: flex; gap: 8px; margin-top: 10px;">
-      <button id="edit-set-dup-btn" class="btn-confirm-action" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border-medium); color: var(--text-secondary); font-size: 0.78rem;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right: 4px; vertical-align: -2px;">
+    <!-- Action Buttons Row: Duplicate, Delete, Save -->
+    <div class="edit-modal-actions">
+      <button id="edit-set-dup-btn" class="btn-confirm-action edit-btn-dup" aria-label="Duplicate set">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
         </svg>
-        Duplicate
+        <span>Duplicate</span>
       </button>
-      <button id="edit-set-delete-btn" class="btn-confirm-action" style="flex: 1; background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.3); color: #ff6b6b; font-size: 0.78rem;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right: 4px; vertical-align: -2px;">
+      <button id="edit-set-delete-btn" class="btn-confirm-action edit-btn-delete" aria-label="Delete set">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"></polyline>
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
         </svg>
-        Delete Set
+        <span>Delete Set</span>
+      </button>
+      <button id="edit-set-save-btn" class="btn-confirm-action edit-btn-save" aria-label="Save set changes">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Save</span>
       </button>
     </div>
   </div>

@@ -35,6 +35,7 @@
   --drawer-header-bg: #ffffff;
   --modal-bg-gradient: linear-gradient(175deg, #ffffff, #f8fafc);
   --modal-header-bg: #f8fafc;
+  --graph-bg: #f1f5f9;
   --stats-grid-bg: #ffffff;
   --stats-grid-border: rgba(0, 0, 0, 0.12);
   --fade-gradient-to: #ffffff;
@@ -99,6 +100,7 @@
   --drawer-header-bg: #12151b;
   --modal-bg-gradient: linear-gradient(175deg, #181d27, #11141b);
   --modal-header-bg: #181d27;
+  --graph-bg: rgba(0, 0, 0, 0.25);
   --stats-grid-bg: rgba(0, 0, 0, 0.28);
   --stats-grid-border: var(--border-subtle);
   --fade-gradient-to: var(--bg-primary);

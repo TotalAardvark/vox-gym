@@ -254,6 +254,7 @@ class VoxGymApp {
         ui.closeAmbiguityDrawer();
         ui.closeIncompleteDrawer();
         ui.closeExerciseLogModal();
+        ui.closeEditSetModal();
         if (ui.elements.settingsModal) {
           ui.elements.settingsModal.classList.remove("visible");
         }
