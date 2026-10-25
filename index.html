@@ -15,11 +15,11 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/modals.css">
+  <!-- Stylesheets with Cache Busting -->
+  <link rel="stylesheet" href="css/variables.css?v=12">
+  <link rel="stylesheet" href="css/base.css?v=12">
+  <link rel="stylesheet" href="css/components.css?v=12">
+  <link rel="stylesheet" href="css/modals.css?v=12">
 </head>
 <body>
 
@@ -459,86 +459,90 @@
 
   <!-- Individual Exercise Log Modal -->
   <div id="exercise-log-modal" class="confirm-modal exercise-log-modal" role="dialog" aria-modal="true" aria-label="Exercise Log">
-    <div class="confirm-header-row" style="margin-bottom: 8px;">
-      <div class="confirm-title-wrap">
-        <h3 id="exercise-log-title" class="confirm-exercise-name">Barbell Bench Press</h3>
-        <span id="exercise-log-muscle" class="confirm-type-badge type-bw" style="align-self: flex-start; margin-top: 4px;">Chest</span>
+    <!-- Sticky / Pinned Header (Always Visible at Top with Title & Close X) -->
+    <div class="exercise-log-header">
+      <div class="exercise-log-title-wrap">
+        <h3 id="exercise-log-title" class="exercise-log-title">Barbell Bench Press</h3>
+        <span id="exercise-log-muscle" class="confirm-type-badge type-bw">Chest</span>
       </div>
-      <button id="exercise-log-close-btn" class="settings-close-btn" aria-label="Close exercise log">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <button id="exercise-log-close-btn" class="modal-close-icon-btn" aria-label="Close exercise log" title="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
     </div>
 
-    <!-- Progress Graph Section -->
-    <div class="exercise-graph-section">
-      <div class="graph-legend-row">
-        <span class="graph-legend-item legend-max"><span class="legend-dot dot-max"></span>Max Weight</span>
-        <span class="graph-legend-item legend-vol"><span class="legend-dot dot-vol"></span>Total Volume</span>
-      </div>
+    <!-- Scrollable Content Body (Graph + Session History) -->
+    <div class="exercise-log-scroll-body">
+      <!-- Progress Graph Section -->
+      <div class="exercise-graph-section">
+        <div class="graph-legend-row">
+          <span class="graph-legend-item legend-max"><span class="legend-dot dot-max"></span>Max Weight</span>
+          <span class="graph-legend-item legend-vol"><span class="legend-dot dot-vol"></span>Total Volume</span>
+        </div>
 
-      <div id="exercise-graph-container" class="exercise-graph-container">
-        <!-- Dual Y-Axis Labels & Canvas Container -->
-        <div class="graph-canvas-wrapper">
-          <!-- Left Y-Axis: Max Weight (reads vertically bottom-to-top) -->
-          <div class="graph-axis-left">
-            <span class="graph-axis-label vertical-b2t">Max</span>
-            <div class="graph-axis-ticks">
-              <span id="graph-y-max-top" class="graph-tick-val">--</span>
-              <span id="graph-y-max-bottom" class="graph-tick-val">--</span>
-            </div>
-          </div>
-
-          <!-- Canvas Area with overlay for interactive tooltip & crosshair -->
-          <div class="graph-svg-wrapper">
-            <svg id="exercise-graph-svg" class="exercise-graph-svg" viewBox="0 0 320 150" preserveAspectRatio="none">
-              <!-- Grid lines & paths dynamically generated -->
-            </svg>
-            <!-- Interactive Touch / Pointer Overlay -->
-            <div id="graph-interaction-layer" class="graph-interaction-layer"></div>
-            <!-- Interactive Popup Tooltip -->
-            <div id="graph-tooltip" class="graph-tooltip">
-              <div id="graph-tooltip-date" class="graph-tooltip-date">Oct 25</div>
-              <div class="graph-tooltip-metrics">
-                <span id="graph-tooltip-max" class="tooltip-val max-val">225 lbs</span>
-                <span id="graph-tooltip-vol" class="tooltip-val vol-val">3,600 lbs</span>
+        <div id="exercise-graph-container" class="exercise-graph-container">
+          <!-- Dual Y-Axis Labels & Canvas Container -->
+          <div class="graph-canvas-wrapper">
+            <!-- Left Y-Axis: Max Weight (reads vertically bottom-to-top) -->
+            <div class="graph-axis-left">
+              <span class="graph-axis-label vertical-b2t">Max</span>
+              <div class="graph-axis-ticks">
+                <span id="graph-y-max-top" class="graph-tick-val">--</span>
+                <span id="graph-y-max-bottom" class="graph-tick-val">--</span>
               </div>
             </div>
-          </div>
 
-          <!-- Right Y-Axis: Volume (reads vertically top-to-bottom) -->
-          <div class="graph-axis-right">
-            <div class="graph-axis-ticks">
-              <span id="graph-y-vol-top" class="graph-tick-val">--</span>
-              <span id="graph-y-vol-bottom" class="graph-tick-val">--</span>
+            <!-- Canvas Area with overlay for interactive tooltip & crosshair -->
+            <div class="graph-svg-wrapper">
+              <svg id="exercise-graph-svg" class="exercise-graph-svg" viewBox="0 0 320 150" preserveAspectRatio="none">
+                <!-- Grid lines & paths dynamically generated -->
+              </svg>
+              <!-- Interactive Touch / Pointer Overlay -->
+              <div id="graph-interaction-layer" class="graph-interaction-layer"></div>
+              <!-- Interactive Popup Tooltip -->
+              <div id="graph-tooltip" class="graph-tooltip">
+                <div id="graph-tooltip-date" class="graph-tooltip-date">Oct 25</div>
+                <div class="graph-tooltip-metrics">
+                  <span id="graph-tooltip-max" class="tooltip-val max-val">225 lbs</span>
+                  <span id="graph-tooltip-vol" class="tooltip-val vol-val">3,600 lbs</span>
+                </div>
+              </div>
             </div>
-            <span class="graph-axis-label vertical-t2b">Volume</span>
+
+            <!-- Right Y-Axis: Volume (reads vertically top-to-bottom) -->
+            <div class="graph-axis-right">
+              <div class="graph-axis-ticks">
+                <span id="graph-y-vol-top" class="graph-tick-val">--</span>
+                <span id="graph-y-vol-bottom" class="graph-tick-val">--</span>
+              </div>
+              <span class="graph-axis-label vertical-t2b">Volume</span>
+            </div>
+          </div>
+
+          <!-- X Axis (Dates: First & Last only) -->
+          <div class="graph-x-axis">
+            <span id="graph-x-first-date" class="graph-x-label">--</span>
+            <span id="graph-x-last-date" class="graph-x-label">--</span>
           </div>
         </div>
+      </div>
 
-        <!-- X Axis (Dates: First & Last only) -->
-        <div class="graph-x-axis">
-          <span id="graph-x-first-date" class="graph-x-label">--</span>
-          <span id="graph-x-last-date" class="graph-x-label">--</span>
+      <!-- History Sessions List -->
+      <div class="exercise-log-history-section">
+        <div class="exercise-log-section-header">
+          <span class="exercise-log-section-title">Session History</span>
+          <span id="exercise-log-count-pill" class="activity-metric-pill">0 Sessions</span>
         </div>
-      </div>
-    </div>
-
-    <!-- History Sessions List -->
-    <div class="exercise-log-history-section">
-      <div class="exercise-log-section-header">
-        <span class="exercise-log-section-title">Session History</span>
-        <span id="exercise-log-count-pill" class="activity-metric-pill">0 Sessions</span>
-      </div>
-      <div id="exercise-log-sessions-list" class="exercise-log-sessions-list">
-        <!-- Rendered session cards -->
+        <div id="exercise-log-sessions-list" class="exercise-log-sessions-list">
+          <!-- Rendered session cards -->
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Modular Scripts -->
-  <script type="module" src="js/app.js?v=11"></script>
+  <script type="module" src="js/app.js?v=12"></script>
 </body>
 </html>

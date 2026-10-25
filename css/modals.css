@@ -612,13 +612,102 @@
    Exercise Log Modal & Progress Dual-Axis Graph
    ========================================================================== */
 .exercise-log-modal {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 480px;
   max-height: 88vh;
   height: 88vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 18px 16px calc(16px + var(--sab)) 16px;
+  padding: 0; /* Header and scroll body provide their own padding */
   box-sizing: border-box;
+  background: linear-gradient(175deg, #181d27, #11141b);
+  border: 1px solid rgba(0, 245, 155, 0.3);
+  border-bottom: none;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 245, 155, 0.15);
+  z-index: 75;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.exercise-log-modal.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Modal Close Icon Button */
+.modal-close-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.modal-close-icon-btn:hover,
+.modal-close-icon-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+
+/* Fixed Header: Always visible at top */
+.exercise-log-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 14px 20px;
+  background: #181d27;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.exercise-log-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.exercise-log-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Scrollable Container for Graph + Sessions */
+.exercise-log-scroll-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(24px + var(--sab)) 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .exercise-graph-section {
@@ -626,7 +715,6 @@
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
   padding: 12px 10px 8px 10px;
-  margin-bottom: 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -863,8 +951,7 @@
 .exercise-log-history-section {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  flex-shrink: 0;
 }
 
 .exercise-log-section-header {
@@ -887,12 +974,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 2px;
-  padding-bottom: 12px;
-  flex: 1;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* Individual Session Card in History */
@@ -925,8 +1006,12 @@
 }
 
 .log-session-chevron {
-  width: 14px;
-  height: 14px;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+  min-height: 16px;
+  max-width: 16px;
+  max-height: 16px;
   color: var(--text-muted);
   transition: transform 0.2s ease;
   flex-shrink: 0;

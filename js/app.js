@@ -241,11 +241,12 @@ class VoxGymApp {
       });
     }
 
-    // Backdrop click dismisses drawers
+    // Backdrop click dismisses drawers and modals
     if (ui.elements.modalBackdrop) {
       ui.elements.modalBackdrop.addEventListener("click", () => {
         ui.closeAmbiguityDrawer();
         ui.closeIncompleteDrawer();
+        ui.closeExerciseLogModal();
         if (ui.elements.settingsModal) {
           ui.elements.settingsModal.classList.remove("visible");
         }

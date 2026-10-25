@@ -1330,7 +1330,7 @@ export class UIController {
         <div class="log-session-card" data-date="${session.date}">
           <div class="log-session-header">
             <div class="log-session-left">
-              <svg class="log-session-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="log-session-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
               <span class="log-session-date">${session.formattedDate}</span>
