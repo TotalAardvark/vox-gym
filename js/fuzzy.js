@@ -46,13 +46,20 @@ export function stringSimilarity(str1, str2) {
   if (s1 === s2) return 1.0;
   if (!s1 || !s2) return 0.0;
 
-  // Exact inclusion bonus
-  if (s1.includes(s2) || s2.includes(s1)) {
-    const minLen = Math.min(s1.length, s2.length);
-    const maxLen = Math.max(s1.length, s2.length);
-    const inclusionScore = minLen / maxLen;
-    // Boost inclusion
-    return Math.max(0.85, inclusionScore);
+  // Exact whole-word phrase match boundary check
+  // e.g. "pull ups" in "pull ups 10 reps", or "lateral raise" in "machine lateral raise 20 for 12"
+  const escaped2 = s2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex2 = new RegExp("(?:^|\\s)" + escaped2 + "(?:\\s|$)", "i");
+  if (regex2.test(s1)) {
+    const coverage = s2.length / s1.length;
+    return Math.min(0.99, 0.94 + 0.05 * coverage);
+  }
+
+  const escaped1 = s1.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex1 = new RegExp("(?:^|\\s)" + escaped1 + "(?:\\s|$)", "i");
+  if (regex1.test(s2)) {
+    const coverage = s1.length / s2.length;
+    return Math.min(0.99, 0.94 + 0.05 * coverage);
   }
 
   // Token matching (e.g. "db fly" vs "dumbbell fly")
@@ -62,25 +69,29 @@ export function stringSimilarity(str1, str2) {
   for (const t1 of tokens1) {
     if (tokens2.some(t2 => {
       if (t1 === t2) return true;
-      if (t1 === "db" && t2 === "dumbbell") return true;
-      if (t1 === "bb" && t2 === "barbell") return true;
-      if (t1.length > 2 && t2.startsWith(t1)) return true;
-      if (t2.length > 2 && t1.startsWith(t2)) return true;
+      if (t1 === "db" && (t2 === "dumbbell" || t2 === "dumbbells")) return true;
+      if (t2 === "db" && (t1 === "dumbbell" || t1 === "dumbbells")) return true;
+      if (t1 === "bb" && (t2 === "barbell" || t2 === "barbells")) return true;
+      if (t2 === "bb" && (t1 === "barbell" || t1 === "barbells")) return true;
       return false;
     })) {
       tokenMatches++;
     }
   }
-  const tokenScore = (2.0 * tokenMatches) / (tokens1.length + tokens2.length);
 
   const minTokens = Math.min(tokens1.length, tokens2.length);
+  const tokenScore = (2.0 * tokenMatches) / (tokens1.length + tokens2.length);
   const coverage = minTokens > 0 ? (tokenMatches / minTokens) : 0;
 
   const maxLen = Math.max(s1.length, s2.length);
   const distance = levenshteinDistance(s1, s2);
   const levScore = 1.0 - (distance / maxLen);
 
-  return Math.max(levScore, tokenScore * 0.9, coverage >= 1.0 ? 0.85 : 0);
+  let baseScore = Math.max(levScore, tokenScore * 0.85);
+  if (coverage >= 1.0 && minTokens >= 2) {
+    baseScore = Math.max(baseScore, 0.82);
+  }
+  return baseScore;
 }
 
 /**
@@ -160,16 +171,16 @@ export function matchExercise(input, additionalExercises = []) {
   const best = topMatches[0];
 
   // Ambiguity criteria per PRD 3.2:
-  // - Confidence is < 80% (< 0.80)
-  // - Or multiple close matches exist (e.g. top 2 within 0.08 of each other and both > 0.65)
+  // - Confidence is < 75% (< 0.75)
+  // - Or multiple close matches exist (top 2 within 0.08 of each other, topMatch2 >= 0.70, and best match < 0.95)
   let isAmbiguous = false;
-  if (!best || best.score < 0.80) {
+  if (!best || best.score < 0.75) {
     isAmbiguous = true;
   } else if (
     topMatches.length > 1 &&
+    best.score < 0.95 &&
     topMatches[1].score >= 0.70 &&
-    (best.score - topMatches[1].score) < 0.08 &&
-    best.score < 0.98
+    (best.score - topMatches[1].score) < 0.08
   ) {
     isAmbiguous = true;
   }

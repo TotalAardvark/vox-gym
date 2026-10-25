@@ -90,10 +90,12 @@ class VoxGymApp {
 
     const prefs = storage.getPreferences();
     const lastSet = storage.getLastLoggedSet();
+    const customExercises = storage.getCustomExercises();
 
     const parseResult = parseVoiceIntent(rawTranscript, {
       lastSet,
-      userUnit: prefs.unit
+      userUnit: prefs.unit,
+      customExercises
     });
 
     console.log("Parsed Voice Intent:", parseResult);
