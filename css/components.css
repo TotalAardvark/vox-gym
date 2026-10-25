@@ -343,19 +343,25 @@ button.flow-set-item {
 
 button.flow-set-item:hover,
 button.flow-set-item:active {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
 }
 
 .flow-set-item.highlight-latest,
 button.flow-set-item.highlight-latest {
-  color: #ffffff;
+  color: var(--text-secondary);
   font-weight: 800;
-  background: rgba(0, 245, 155, 0.15);
+  background: rgba(0, 168, 107, 0.12);
   border: 1px solid var(--accent-green);
   padding: 1px 6px;
   border-radius: 4px;
+}
+
+[data-theme="dark"] .flow-set-item.highlight-latest,
+[data-theme="dark"] button.flow-set-item.highlight-latest {
+  color: #ffffff;
+  background: rgba(0, 245, 155, 0.15);
 }
 
 .flow-divider {
