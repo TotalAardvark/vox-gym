@@ -50,8 +50,8 @@ body {
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
   border-left: 1px solid var(--border-subtle);
   border-right: 1px solid var(--border-subtle);
-  padding-top: max(8px, var(--sat));
-  padding-bottom: max(8px, var(--sab));
+  padding-top: calc(max(8px, var(--sat)) + 25px);
+  padding-bottom: 0px;
   padding-left: max(12px, var(--sal));
   padding-right: max(12px, var(--sar));
 }
