@@ -324,7 +324,26 @@
   white-space: nowrap;
 }
 
-.flow-set-item.highlight-latest {
+button.flow-set-item {
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+button.flow-set-item:hover,
+button.flow-set-item:active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.flow-set-item.highlight-latest,
+button.flow-set-item.highlight-latest {
   color: #ffffff;
   font-weight: 800;
   background: rgba(0, 245, 155, 0.15);
@@ -630,10 +649,10 @@
   z-index: 25;
 }
 
-/* Collapsed state: occupies bottom ~33% of page */
+/* Collapsed state: occupies bottom ~16% of page (reduced by half) */
 .workout-drawer.collapsed {
-  height: 33vh;
-  min-height: 220px;
+  height: 16vh;
+  min-height: 112px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.4);
@@ -652,7 +671,7 @@
 }
 
 .drawer-header {
-  padding: 8px 12px 6px 12px;
+  padding: 4px 12px 6px 12px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -662,12 +681,31 @@
   user-select: none;
 }
 
+.drawer-chevron-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 2px 0 2px 0;
+  color: var(--accent-green);
+  cursor: pointer;
+}
+
+.drawer-handle-chevron {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.workout-drawer.expanded .drawer-handle-chevron {
+  transform: rotate(180deg);
+  color: var(--text-muted);
+}
+
 .drawer-header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .drawer-chevron-btn {
@@ -712,8 +750,8 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70px;
-  background: linear-gradient(to bottom, transparent, var(--bg-primary) 85%);
+  height: 45px;
+  background: linear-gradient(to bottom, transparent, var(--bg-primary) 88%);
   pointer-events: none;
   opacity: 1;
   transition: opacity 0.2s ease;
@@ -739,11 +777,11 @@
 }
 
 .activity-title {
-  font-size: 0.8rem;
+  font-size: 1.05rem; /* ~30% bigger font */
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-primary);
+  letter-spacing: 0.04em;
+  color: #ffffff;
 }
 
 .activity-metrics-summary {
@@ -765,6 +803,15 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.drawer-exercise-card {
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.drawer-exercise-card:hover {
+  border-color: rgba(0, 245, 155, 0.35);
 }
 
 /* Grouped Exercise Card */

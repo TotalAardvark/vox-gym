@@ -143,7 +143,11 @@
     <div id="workout-drawer" class="workout-drawer collapsed">
       <!-- Drawer Drag Handle / Header -->
       <div id="drawer-header" class="drawer-header" title="Tap or swipe to expand/collapse workout">
-        <div class="drawer-drag-pill"></div>
+        <div class="drawer-chevron-handle" aria-hidden="true">
+          <svg class="drawer-handle-chevron" width="28" height="11" viewBox="0 0 24 10" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 8 12 2 20 8"></polyline>
+          </svg>
+        </div>
         <div class="drawer-header-content">
           <span class="activity-title">Today's Workout</span>
           <div class="activity-metrics-summary">
@@ -420,6 +424,23 @@
       <button id="edit-set-cancel-btn" class="btn-confirm-action btn-confirm-discard">Cancel</button>
       <button id="edit-set-save-btn" class="btn-confirm-action btn-confirm-primary">Save Changes</button>
     </div>
+
+    <div class="edit-modal-secondary-actions" style="display: flex; gap: 8px; margin-top: 10px;">
+      <button id="edit-set-dup-btn" class="btn-confirm-action" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border-medium); color: var(--text-secondary); font-size: 0.78rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right: 4px; vertical-align: -2px;">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        Duplicate
+      </button>
+      <button id="edit-set-delete-btn" class="btn-confirm-action" style="flex: 1; background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.3); color: #ff6b6b; font-size: 0.78rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right: 4px; vertical-align: -2px;">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        Delete Set
+      </button>
+    </div>
   </div>
 
   <!-- Exercise Rename / Custom Register Modal -->
@@ -437,6 +458,6 @@
   </div>
 
   <!-- Modular Scripts -->
-  <script type="module" src="js/app.js?v=8"></script>
+  <script type="module" src="js/app.js?v=9"></script>
 </body>
 </html>

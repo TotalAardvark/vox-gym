@@ -144,6 +144,8 @@ export class UIController {
       editRepsValue: document.getElementById("edit-reps-value"),
       editSetCancelBtn: document.getElementById("edit-set-cancel-btn"),
       editSetSaveBtn: document.getElementById("edit-set-save-btn"),
+      editSetDupBtn: document.getElementById("edit-set-dup-btn"),
+      editSetDeleteBtn: document.getElementById("edit-set-delete-btn"),
 
       // Rename / Custom Exercise Modal
       renameExerciseModal: document.getElementById("rename-exercise-modal"),
@@ -271,9 +273,17 @@ export class UIController {
         this.elements.feedbackTodaySets.innerHTML = rawSets.map((s, idx) => {
           const isLatest = idx === lastIdx;
           const str = formatSetText(s);
-          const itemHtml = `<span class="flow-set-item ${isLatest ? 'highlight-latest' : ''}">${str}</span>`;
+          const itemHtml = `<button class="flow-set-item flow-set-btn ${isLatest ? 'highlight-latest' : ''}" data-set-id="${s.id || ''}" title="Tap to edit set" aria-label="Edit set ${str}">${str}</button>`;
           return idx > 0 ? `<span class="flow-divider">|</span>${itemHtml}` : itemHtml;
         }).join(" ");
+
+        this.elements.feedbackTodaySets.querySelectorAll(".flow-set-btn").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const sid = btn.getAttribute("data-set-id");
+            if (sid) this.openEditSetModal(sid);
+          });
+        });
       }
     }
 
@@ -366,142 +376,123 @@ export class UIController {
     // Sort exercise groups with most recently updated exercise first
     const sortedGroups = Array.from(exerciseMap.values()).sort((a, b) => b.lastTimestamp - a.lastTimestamp);
 
+    const allExercises = [...EXERCISE_DATABASE, ...storage.getCustomExercises()];
+
+    const formatSetText = (s) => {
+      const r = s.reps || 0;
+      if (s.type === "bodyweight" || s.isBodyweight) {
+        const added = s.addedWeight > 0 ? `+${s.addedWeight} ${s.unit || unit}` : (s.weight > 0 ? `${s.weight} ${s.unit || unit}` : "BW");
+        return `${added} × ${r}`;
+      }
+      const w = s.weight || s.addedWeight || 0;
+      return `${w} ${s.unit || unit} × ${r}`;
+    };
+
     this.elements.activityList.innerHTML = sortedGroups.map(group => {
-      const dbEntry = EXERCISE_DATABASE.find(e => e.name === group.exercise);
+      const dbEntry = allExercises.find(e => (e.name || "").trim().toLowerCase() === group.exercise.trim().toLowerCase());
       const muscle = dbEntry ? dbEntry.muscle : "Strength";
+      const stats = storage.getExerciseComparativeStats(group.exercise);
 
-      let groupVol = 0;
-      group.sets.forEach(s => {
-        const w = s.weight || s.addedWeight || 0;
-        const r = typeof s.reps === "number" ? s.reps : 0;
-        groupVol += w * r;
-      });
+      // Micro-Trend Indicator
+      const trend = stats?.microTrend || { text: "Logged today", direction: "neutral", arrow: "🎯" };
 
-      const setCountText = `${group.sets.length} ${group.sets.length === 1 ? "Set" : "Sets"}`;
-      const volText = groupVol > 0 ? ` • ${groupVol.toLocaleString()} ${unit}` : "";
+      // Today's Row data
+      const todayCount = stats?.thisSession?.setCount || group.sets.length;
+      const todayCountStr = `${todayCount} ${todayCount === 1 ? 'set' : 'sets'}`;
+      const todayVol = stats?.thisSession?.volume ?? group.sets.reduce((sum, s) => sum + ((s.weight || s.addedWeight || 0) * (s.reps || 0)), 0);
+      const todayVolStr = `${todayVol.toLocaleString()} ${unit}`;
 
-      const setsHtml = group.sets.map((set) => {
-        let detailsHtml = "";
+      const rawTodaySets = stats?.thisSession?.rawSets || group.sets;
+      let todaySetsHtml = "";
+      if (!rawTodaySets || rawTodaySets.length === 0) {
+        todaySetsHtml = `<span class="stat-muted">No sets logged yet today</span>`;
+      } else {
+        const lastIdx = rawTodaySets.length - 1;
+        todaySetsHtml = rawTodaySets.map((s, idx) => {
+          const isLatest = idx === lastIdx;
+          const str = formatSetText(s);
+          const itemHtml = `<button class="flow-set-item flow-set-btn ${isLatest ? 'highlight-latest' : ''}" data-set-id="${s.id || ''}" title="Tap to edit set" aria-label="Edit set ${str}">${str}</button>`;
+          return idx > 0 ? `<span class="flow-divider">|</span>${itemHtml}` : itemHtml;
+        }).join(" ");
+      }
 
-        if (set.type === "drop_set" && Array.isArray(set.drops)) {
-          const dropSeq = set.drops.map(d => `${d.weight}${set.unit || unit} × ${d.reps}`).join(" → ");
-          detailsHtml = `<span class="badge-tag drop-tag">DROP</span> <span>${dropSeq}</span>`;
-        } else if (set.type === "bodyweight" || set.isBodyweight) {
-          const added = set.addedWeight > 0 ? `+${set.addedWeight} ${set.unit || unit}` : "BW";
-          detailsHtml = `<span class="badge-tag bw-tag">BODYWEIGHT</span> <strong>${added}</strong> × <strong>${set.reps} reps</strong>`;
-        } else if (set.type === "time") {
-          detailsHtml = `<strong>${set.duration}s</strong> duration`;
-        } else if (set.type === "distance_time") {
-          detailsHtml = `<strong>${set.distance} ${set.distUnit}</strong> in <strong>${set.duration} ${set.durationUnit}</strong>`;
-        } else {
-          detailsHtml = `<strong>${set.weight} ${set.unit || unit}</strong> × <strong>${set.reps} reps</strong>`;
+      // Last Workout Row data
+      let lastDateLabel = "Last Workout:";
+      let lastCountStr = `0 sets • 0 ${unit}`;
+      let lastSetsHtml = `<span class="stat-muted">No previous history</span>`;
+
+      if (stats?.lastSession) {
+        lastDateLabel = `Last Workout (${stats.lastSession.formattedDate}):`;
+        const lastCount = stats.lastSession.setCount ?? (stats.lastSession.sets ? stats.lastSession.sets.length : 0);
+        const lCountStr = `${lastCount} ${lastCount === 1 ? 'set' : 'sets'}`;
+        const lVolStr = `${(stats.lastSession.volume || 0).toLocaleString()} ${unit}`;
+        lastCountStr = `${lCountStr} • ${lVolStr}`;
+
+        const pastSets = stats.lastSession.rawSets || stats.lastSession.sets || [];
+        if (Array.isArray(pastSets) && pastSets.length > 0) {
+          lastSetsHtml = pastSets.map((s, idx) => {
+            const str = formatSetText(s);
+            const itemHtml = `<span class="flow-set-item">${str}</span>`;
+            return idx > 0 ? `<span class="flow-divider">|</span>${itemHtml}` : itemHtml;
+          }).join(" ");
         }
-
-        return `
-          <div class="group-set-row" data-set-id="${set.id}">
-            <div class="group-set-left">
-              <div class="group-set-content">
-                <div class="group-set-metrics">
-                  ${detailsHtml}
-                </div>
-              </div>
-            </div>
-            <div class="group-set-actions">
-              <!-- Duplicate Set -->
-              <button class="btn-set-action btn-dup-action" data-dup-id="${set.id}" aria-label="Duplicate set" title="Duplicate set">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <!-- Edit Set -->
-              <button class="btn-set-action btn-edit-action" data-edit-id="${set.id}" aria-label="Edit set" title="Edit set">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-              </button>
-              <!-- Delete Set -->
-              <button class="btn-set-action btn-delete-action" data-delete-id="${set.id}" aria-label="Delete set" title="Delete set">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join("");
+      }
 
       return `
-        <div class="exercise-group-card" data-exercise="${group.exercise}">
-          <div class="group-card-header">
-            <div class="group-card-title-wrap">
-              <span class="group-card-title">${group.exercise}</span>
-              <span class="group-card-subtitle">${muscle}</span>
+        <div class="feedback-card drawer-exercise-card" data-exercise="${group.exercise}">
+          <div class="feedback-header-row">
+            <div class="feedback-title-group">
+              <h2 class="feedback-ex-title">${group.exercise}</h2>
+              <span class="feedback-muscle-badge">${muscle}</span>
             </div>
-            <div class="group-card-meta">
-              <span class="group-card-badge">${setCountText}${volText}</span>
+            <div class="trend-badge trend-${trend.direction}">
+              <span class="trend-arrow">${trend.arrow || '🎯'}</span>
+              <span class="trend-text">${trend.text}</span>
             </div>
           </div>
-          <div class="group-sets-list">
-            ${setsHtml}
+
+          <div class="feedback-stats-grid">
+            <!-- Today Row: Left "Today:", Right Sets Badge, Bottom Sets Flow -->
+            <div class="feedback-session-block">
+              <div class="session-block-header">
+                <span class="session-block-title">Today:</span>
+                <span class="session-badge-green">${todayCountStr} • ${todayVolStr}</span>
+              </div>
+              <div class="session-sets-flow">
+                ${todaySetsHtml}
+              </div>
+            </div>
+
+            <div class="feedback-divider"></div>
+
+            <!-- Last Workout Row: Left "Last Workout (Date):", Right Sets Badge, Bottom Sets Flow -->
+            <div class="feedback-session-block">
+              <div class="session-block-header">
+                <span class="session-block-title">${lastDateLabel}</span>
+                <span class="session-badge-neutral">${lastCountStr}</span>
+              </div>
+              <div class="session-sets-flow">
+                ${lastSetsHtml}
+              </div>
+            </div>
           </div>
         </div>
       `;
     }).join("");
 
-    // Wire actions: Duplicate, Edit, Delete
-    this.elements.activityList.querySelectorAll(".btn-delete-action").forEach(btn => {
+    // Wire set pills in the drawer to open edit set modal
+    this.elements.activityList.querySelectorAll(".flow-set-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        const id = btn.getAttribute("data-delete-id");
-        if (id) {
-          storage.deleteSet(id);
-          this.renderTodaySession();
-          const last = storage.getLastLoggedSet();
-          if (last) {
-            this.updateFeedbackCard(last.exercise);
-          } else {
-            this.renderInitialFeedbackCard();
-          }
+        const setId = btn.getAttribute("data-set-id");
+        if (setId) {
+          this.openEditSetModal(setId);
         }
       });
     });
 
-    this.elements.activityList.querySelectorAll(".btn-dup-action").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const id = btn.getAttribute("data-dup-id");
-        if (id) {
-          const allSets = storage.getTodaySession().sets || [];
-          const targetSet = allSets.find(s => s.id === id);
-          if (targetSet) {
-            const duplicated = {
-              ...targetSet,
-              id: "set_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
-              timestamp: new Date().toISOString()
-            };
-            storage.saveSet(duplicated);
-            this.renderTodaySession();
-            this.updateFeedbackCard(duplicated.exercise);
-            audioFeedback.triggerCommitFeedback();
-          }
-        }
-      });
-    });
-
-    this.elements.activityList.querySelectorAll(".btn-edit-action").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const id = btn.getAttribute("data-edit-id");
-        if (id) {
-          this.openEditSetModal(id);
-        }
-      });
-    });
-
-    this.elements.activityList.querySelectorAll(".exercise-group-card").forEach(card => {
+    // Wire clicking on exercise card to switch top "Last Set Logged" card
+    this.elements.activityList.querySelectorAll(".drawer-exercise-card").forEach(card => {
       card.addEventListener("click", () => {
         const exName = card.getAttribute("data-exercise");
         if (exName) {
@@ -991,6 +982,42 @@ export class UIController {
           this.updateFeedbackCard(updated.exercise);
         }
         audioFeedback.triggerCommitFeedback();
+      });
+    }
+
+    if (this.elements.editSetDupBtn) {
+      this.elements.editSetDupBtn.addEventListener("click", () => {
+        if (!this.activeEditingSetId) return;
+        const allSets = storage.getTodaySession().sets || [];
+        const targetSet = allSets.find(s => s.id === this.activeEditingSetId);
+        if (targetSet) {
+          const duplicated = {
+            ...targetSet,
+            id: "set_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
+            timestamp: new Date().toISOString()
+          };
+          storage.saveSet(duplicated);
+          this.closeEditSetModal();
+          this.renderTodaySession();
+          this.updateFeedbackCard(duplicated.exercise);
+          audioFeedback.triggerCommitFeedback();
+        }
+      });
+    }
+
+    if (this.elements.editSetDeleteBtn) {
+      this.elements.editSetDeleteBtn.addEventListener("click", () => {
+        if (!this.activeEditingSetId) return;
+        const idToDelete = this.activeEditingSetId;
+        storage.deleteSet(idToDelete);
+        this.closeEditSetModal();
+        this.renderTodaySession();
+        const last = storage.getLastLoggedSet();
+        if (last) {
+          this.updateFeedbackCard(last.exercise);
+        } else {
+          this.renderInitialFeedbackCard();
+        }
       });
     }
   }
