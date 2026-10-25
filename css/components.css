@@ -908,11 +908,11 @@ button.flow-set-item.highlight-latest {
   z-index: 25;
 }
 
-/* Collapsed state: occupies bottom ~10% of screen */
+/* Collapsed state: occupies bottom ~10% of screen, anchoring into safe area */
 .workout-drawer.collapsed {
   height: calc(10vh + var(--sab));
   min-height: calc(62px + var(--sab));
-  padding-bottom: var(--sab);
+  padding-bottom: max(8px, var(--sab));
   position: relative;
   overflow: visible; /* Allows upward arrow handle to protrude proudly */
   box-shadow: var(--drawer-shadow);

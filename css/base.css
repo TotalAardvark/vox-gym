@@ -16,6 +16,8 @@ html {
   color: var(--text-primary);
   /* Lock dynamic viewport */
   height: 100%;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
   height: 100dvh;
   overflow: hidden;
   -webkit-text-size-adjust: 100%;
@@ -23,6 +25,8 @@ html {
 
 body {
   height: 100%;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
   height: 100dvh;
   width: 100%;
   overflow: hidden;
@@ -34,13 +38,14 @@ body {
   -webkit-user-select: none;
 }
 
-/* App Viewport Container: Enforces strict 100dvh */
+/* App Viewport Container: Enforces full height across browser & standalone PWA */
 #app-container {
   width: 100%;
   max-width: 480px; /* Centered mobile container on wider screens */
   height: 100%;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
   height: 100dvh;
-  max-height: 100dvh;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -54,6 +59,15 @@ body {
   padding-bottom: 0px;
   padding-left: max(12px, var(--sal));
   padding-right: max(12px, var(--sar));
+}
+
+/* Standalone iOS PWA: guarantee container reaches full screen bottom edge */
+@media all and (display-mode: standalone) {
+  html, body, #app-container {
+    height: 100%;
+    min-height: 100%;
+    max-height: none;
+  }
 }
 
 /* Main scrollable body area between Header and Media Footer */
