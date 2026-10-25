@@ -376,6 +376,247 @@ button.flow-set-item.highlight-latest {
 }
 
 /* ==========================================================================
+   2b. Spotify Dangling Mini-Card (Extending below Last Set Logged Card)
+   ========================================================================== */
+.spotify-widget-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: -3px; /* Dangles snugly from the bottom of feedback card */
+  z-index: 5;
+  position: relative;
+}
+
+/* Disconnected State: Compact Pill Hanging from Bottom of Feedback Card */
+.spotify-pill-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 0 0 16px 16px; /* Dangling tab shape */
+  padding: 4px 10px 5px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.spotify-pill-prompt:hover {
+  border-color: rgba(29, 185, 84, 0.5);
+  box-shadow: 0 4px 14px rgba(29, 185, 84, 0.15);
+}
+
+.spotify-btn-action {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 0;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.spotify-icon-svg {
+  width: 16px;
+  height: 16px;
+  color: #1ed760;
+  flex-shrink: 0;
+}
+
+.spotify-connect-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+}
+
+.spotify-pill-prompt:hover .spotify-connect-text {
+  color: var(--text-primary);
+}
+
+.spotify-btn-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.spotify-btn-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+/* Connected State: Narrow, sleek compact tab dangling under Feedback Card */
+.spotify-pill-player {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: auto;
+  max-width: 90%;
+  min-width: 280px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-medium);
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 0 0 16px 16px; /* Dangling tab curve */
+  padding: 5px 12px 6px 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.spotify-pill-player:hover {
+  border-color: rgba(29, 185, 84, 0.4);
+}
+
+.spotify-track-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.spotify-art-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+}
+
+.spotify-album-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.spotify-art-placeholder {
+  color: #1ed760;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spotify-text-details {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.spotify-track-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  max-width: 130px;
+}
+
+.spotify-track-sub {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.15;
+  margin-top: 1px;
+  max-width: 130px;
+}
+
+/* Playback Control Buttons */
+.spotify-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.spotify-ctrl-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.spotify-ctrl-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.spotify-ctrl-btn:active {
+  transform: scale(0.92);
+}
+
+.spotify-play-pause-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.spotify-play-pause-btn:hover {
+  background: #1ed760;
+  color: #000000;
+}
+
+/* Dark Mode specific tweaks for Spotify widget */
+[data-theme="dark"] .spotify-pill-prompt {
+  background: #151922;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .spotify-pill-prompt:hover {
+  border-color: rgba(29, 185, 84, 0.6);
+  box-shadow: 0 4px 15px rgba(29, 185, 84, 0.2);
+}
+
+[data-theme="dark"] .spotify-pill-player {
+  background: #151922;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .spotify-pill-player:hover {
+  border-color: rgba(29, 185, 84, 0.45);
+}
+
+[data-theme="dark"] .spotify-play-pause-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .spotify-play-pause-btn:hover {
+  background: #1ed760;
+  color: #000000;
+}
+
+/* ==========================================================================
    3. Push-To-Talk (PTT) Central Zone
    ========================================================================== */
 .ptt-zone {
