@@ -90,6 +90,7 @@ export class UIController {
       confirmRepsValue: document.getElementById("confirm-reps-value"),
       confirmDropList: document.getElementById("confirm-drop-list"),
       confirmStandardFields: document.getElementById("confirm-standard-fields"),
+      confirmDbHint: document.getElementById("confirm-db-hint"),
       colorCrawlBar: document.getElementById("color-crawl-progress"),
       colorCrawlStatusText: document.getElementById("color-crawl-status-text"),
       manualConfirmActions: document.getElementById("manual-confirm-actions"),
@@ -157,6 +158,7 @@ export class UIController {
       editSetModal: document.getElementById("edit-set-modal"),
       editSetTitle: document.getElementById("edit-set-title"),
       editSetCloseBtn: document.getElementById("edit-set-close-btn"),
+      editDbHint: document.getElementById("edit-db-hint"),
       btnEditWeightMinus: document.getElementById("btn-edit-weight-minus"),
       btnEditWeightPlus: document.getElementById("btn-edit-weight-plus"),
       editWeightValue: document.getElementById("edit-weight-value"),
@@ -563,6 +565,16 @@ export class UIController {
   // =========================================================================
   // 3. Confirmation Modal & 4-Second "Color Crawl" Animation (PRD 3.3)
   // =========================================================================
+  isDumbbellExercise(exerciseName) {
+    if (!exerciseName) return false;
+    const lower = exerciseName.toLowerCase();
+    if (lower.includes("dumbbell") || lower.includes("db ") || lower.startsWith("db")) return true;
+    const allExercises = [...EXERCISE_DATABASE, ...storage.getCustomExercises()];
+    const found = allExercises.find(e => (e.name || "").toLowerCase() === lower);
+    if (!found) return false;
+    return (found.aliases || []).some(a => a.startsWith("db ") || a.includes("dumbbell"));
+  }
+
   showConfirmationModal(payload, onConfirm) {
     this.activeConfirmPayload = { ...payload };
     this.onConfirmCallback = onConfirm;
@@ -577,6 +589,12 @@ export class UIController {
     // Check if exercise was previously logged or exists in history/catalog
     const exists = storage.exerciseExistsInHistory(this.activeConfirmPayload.exercise);
     const historyBadgeText = exists ? "LOGGED BEFORE" : "NEW EXERCISE";
+
+    // Show/hide per-hand DB hint
+    const isDbExercise = this.isDumbbellExercise(this.activeConfirmPayload.exercise);
+    if (this.elements.confirmDbHint) {
+      this.elements.confirmDbHint.style.display = isDbExercise ? "inline-block" : "none";
+    }
 
     // Badges & Stepper Visibility
     if (this.activeConfirmPayload.type === "drop_set") {
@@ -1119,6 +1137,11 @@ export class UIController {
 
     if (this.elements.editSetTitle) {
       this.elements.editSetTitle.textContent = `Edit ${target.exercise}`;
+    }
+
+    const isDbExercise = this.isDumbbellExercise(target.exercise);
+    if (this.elements.editDbHint) {
+      this.elements.editDbHint.style.display = isDbExercise ? "inline-block" : "none";
     }
     if (this.elements.editWeightValue) {
       this.elements.editWeightValue.textContent = target.weight || target.addedWeight || 0;

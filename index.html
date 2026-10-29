@@ -279,7 +279,10 @@
     <div id="confirm-standard-fields" class="steppers-grid">
       <!-- Weight Stepper -->
       <div class="stepper-box">
-        <span class="stepper-label">Weight</span>
+        <div class="stepper-label-row">
+          <span class="stepper-label">Weight</span>
+          <span id="confirm-db-hint" class="stepper-db-hint" style="display: none;">per hand</span>
+        </div>
         <div class="stepper-controls">
           <button id="btn-weight-minus" class="step-btn" aria-label="Decrease weight by 5">-</button>
           <div class="stepper-value-wrapper">
@@ -453,6 +456,10 @@
         <span class="guide-desc">Timed isometric exercise</span>
       </div>
       <div class="guide-row">
+        <span class="guide-cmd">"DB Bench 50s for 10 reps"</span>
+        <span class="guide-desc">Dumbbells log per-hand weight ("50s" → 50 lbs)</span>
+      </div>
+      <div class="guide-row">
         <span class="guide-cmd">"DB Fly 40 lbs 12 reps"</span>
         <span class="guide-desc">Fuzzy alias normalization ("DB Fly" → Dumbbell Fly)</span>
       </div>
@@ -498,7 +505,10 @@
     <div class="steppers-grid">
       <!-- Weight Stepper -->
       <div class="stepper-box">
-        <span class="stepper-label">Weight</span>
+        <div class="stepper-label-row">
+          <span class="stepper-label">Weight</span>
+          <span id="edit-db-hint" class="stepper-db-hint" style="display: none;">per hand</span>
+        </div>
         <div class="stepper-controls">
           <button id="btn-edit-weight-minus" class="step-btn" aria-label="Decrease weight">-</button>
           <div class="stepper-value-wrapper">

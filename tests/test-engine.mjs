@@ -155,6 +155,37 @@ assert(cand2 === "Kas Glute Bridge", `Extract candidate: drop set on Kas glute b
 const cand3 = extractCustomExerciseCandidate("Tibialis raise 25 for 15");
 assert(cand3 === "Tibialis Raise", `Extract candidate: "Tibialis raise 25 for 15" -> "Tibialis Raise" (got "${cand3}")`);
 
+console.log("\n=== 12. Testing Equipment Variants & Dumbbell (DB) Weight Handling ===");
+// Pluralized weight numbers e.g. "50s for 10"
+const dbBenchRes = parseVoiceIntent("db bench with 50s for 10", { userUnit: "lbs" });
+assert(dbBenchRes.status === "ready", "Status ready for db bench 50s");
+assert(dbBenchRes.exercise === "Dumbbell Bench Press", `Exercise is Dumbbell Bench Press (got "${dbBenchRes.exercise}")`);
+assert(dbBenchRes.weight === 50, `Parsed weight 50 from 50s (got ${dbBenchRes.weight})`);
+assert(dbBenchRes.reps === 10, `Parsed reps 10 (got ${dbBenchRes.reps})`);
+
+// Spoken word pluralized tens e.g. "with fifties for 12"
+const hammerRes = parseVoiceIntent("hammer curls with fifties for 12", { userUnit: "lbs" });
+assert(hammerRes.status === "ready", "Status ready for hammer curls with fifties");
+assert(hammerRes.weight === 50, `Parsed weight 50 from "fifties" (got ${hammerRes.weight})`);
+assert(hammerRes.reps === 12, `Parsed reps 12 (got ${hammerRes.reps})`);
+
+// Check equipment variant differentiation
+const bbBench = parseVoiceIntent("bench press 225 for 8", { userUnit: "lbs" });
+assert(bbBench.exercise === "Barbell Bench Press", `Barbell Bench Press matched for "bench press 225 for 8" (got "${bbBench.exercise}")`);
+
+const dbRowRes = parseVoiceIntent("single arm db row 70 for 8", { userUnit: "lbs" });
+assert(dbRowRes.exercise === "Dumbbell Row", `Dumbbell Row matched for "single arm db row" (got "${dbRowRes.exercise}")`);
+
+const tbarRes = parseVoiceIntent("t bar row 135 for 10", { userUnit: "lbs" });
+assert(tbarRes.exercise === "T-Bar Row", `T-Bar Row matched for "t bar row" (got "${tbarRes.exercise}")`);
+
+const hipThrustRes = parseVoiceIntent("hip thrust 225 for 10", { userUnit: "lbs" });
+assert(hipThrustRes.exercise === "Barbell Hip Thrust", `Barbell Hip Thrust matched for "hip thrust" (got "${hipThrustRes.exercise}")`);
+
+const dbRdlRes = parseVoiceIntent("db rdl 60s for 10", { userUnit: "lbs" });
+assert(dbRdlRes.exercise === "Dumbbell Romanian Deadlift", `Dumbbell Romanian Deadlift matched for "db rdl" (got "${dbRdlRes.exercise}")`);
+assert(dbRdlRes.weight === 60, `Weight 60 from 60s on db rdl (got ${dbRdlRes.weight})`);
+
 console.log("\n=== Test Results Summary ===");
 console.log(`Total tests passed: ${passed}`);
 console.log(`Total tests failed: ${failed}`);

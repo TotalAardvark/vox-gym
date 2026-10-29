@@ -99,7 +99,7 @@ export const EXERCISE_DATABASE = [
     muscle: "Hamstrings & Glutes",
     type: "weight_reps",
     aliases: [
-      "rdl", "romanian deadlifts", "stiff leg deadlift", "db rdl", "barbell rdl"
+      "rdl", "romanian deadlifts", "stiff leg deadlift", "barbell rdl", "bb rdl"
     ],
     defaultIncrement: 10
   },
@@ -472,6 +472,289 @@ export const EXERCISE_DATABASE = [
       "hip adductor", "adductor machine", "hip adduction machine", "inner thigh machine"
     ],
     defaultIncrement: 10
+  },
+  // =========================================================================
+  // Equipment Variants & Expanded Exercise Library
+  // =========================================================================
+  {
+    id: "dumbbell-bench-press",
+    name: "Dumbbell Bench Press",
+    muscle: "Chest",
+    type: "weight_reps",
+    aliases: [
+      "db bench", "db bench press", "dumbbell bench", "flat db bench", "flat dumbbell bench", "db flat bench", "db press", "dumbbell press", "flat db press"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "decline-barbell-bench-press",
+    name: "Decline Barbell Bench Press",
+    muscle: "Chest",
+    type: "weight_reps",
+    aliases: [
+      "decline bench", "decline bench press", "decline barbell bench", "decline bb bench", "decline press"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "decline-dumbbell-bench-press",
+    name: "Decline Dumbbell Bench Press",
+    muscle: "Chest",
+    type: "weight_reps",
+    aliases: [
+      "decline db bench", "decline dumbbell press", "decline db press", "decline dumbbell bench"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "incline-dumbbell-fly",
+    name: "Incline Dumbbell Fly",
+    muscle: "Chest",
+    type: "weight_reps",
+    aliases: [
+      "incline db fly", "incline db flyes", "incline dumbbell flyes", "incline fly"
+    ],
+    defaultIncrement: 2.5
+  },
+  {
+    id: "cable-chest-press",
+    name: "Cable Chest Press",
+    muscle: "Chest",
+    type: "weight_reps",
+    aliases: [
+      "cable press", "cable bench press", "standing cable chest press"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "dumbbell-row",
+    name: "Dumbbell Row",
+    muscle: "Back",
+    type: "weight_reps",
+    aliases: [
+      "db row", "single arm dumbbell row", "one arm dumbbell row", "one arm db row", "single arm db row", "db rows", "dumbbell rows"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "t-bar-row",
+    name: "T-Bar Row",
+    muscle: "Back",
+    type: "weight_reps",
+    aliases: [
+      "t bar row", "tbar row", "t-bar rows", "tbar rows", "chest supported t bar row"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "straight-arm-cable-pulldown",
+    name: "Straight-Arm Cable Pulldown",
+    muscle: "Back (Lats)",
+    type: "weight_reps",
+    aliases: [
+      "straight arm pulldown", "straight arm cable pulldown", "cable lat pushdown", "lat pullover", "cable pullover", "straight arm pushdown"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "neutral-grip-lat-pulldown",
+    name: "Neutral Grip Lat Pulldown",
+    muscle: "Back (Lats)",
+    type: "weight_reps",
+    aliases: [
+      "close grip lat pulldown", "close grip pulldown", "v bar pulldown", "neutral grip pulldown", "mag grip pulldown"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "barbell-front-squat",
+    name: "Barbell Front Squat",
+    muscle: "Legs (Quads)",
+    type: "weight_reps",
+    aliases: [
+      "front squat", "front squats", "bb front squat", "barbell front squats"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "dumbbell-goblet-squat",
+    name: "Dumbbell Goblet Squat",
+    muscle: "Legs (Quads & Glutes)",
+    type: "weight_reps",
+    aliases: [
+      "goblet squat", "goblet squats", "db goblet squat", "dumbbell squat", "db squat"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "dumbbell-lunges",
+    name: "Dumbbell Lunges",
+    muscle: "Legs & Glutes",
+    type: "weight_reps",
+    aliases: [
+      "lunges", "db lunges", "walking lunges", "db walking lunges", "dumbbell walking lunges", "reverse lunges", "db reverse lunges"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "barbell-hip-thrust",
+    name: "Barbell Hip Thrust",
+    muscle: "Glutes & Hips",
+    type: "weight_reps",
+    aliases: [
+      "hip thrust", "hip thrusts", "bb hip thrust", "barbell hip thrusts", "glute bridge", "barbell glute bridge"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "dumbbell-romanian-deadlift",
+    name: "Dumbbell Romanian Deadlift",
+    muscle: "Hamstrings & Glutes",
+    type: "weight_reps",
+    aliases: [
+      "db rdl", "db romanian deadlift", "dumbbell rdl", "dumbbell stiff leg deadlift", "db romanian deadlifts"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "standing-calf-raise",
+    name: "Standing Calf Raise",
+    muscle: "Calves",
+    type: "weight_reps",
+    aliases: [
+      "standing calf raise machine", "standing calf raises", "smith machine calf raise", "calf raise", "calf raises", "standing calf"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "dumbbell-shrugs",
+    name: "Dumbbell Shrugs",
+    muscle: "Shoulders & Upper Back",
+    type: "weight_reps",
+    aliases: [
+      "db shrugs", "db shrug", "dumbbell shrug", "shrugs", "shrug"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "barbell-shrugs",
+    name: "Barbell Shrugs",
+    muscle: "Shoulders & Upper Back",
+    type: "weight_reps",
+    aliases: [
+      "barbell shrug", "bb shrug", "bb shrugs", "smith machine shrug", "smith shrug"
+    ],
+    defaultIncrement: 10
+  },
+  {
+    id: "reverse-pec-deck",
+    name: "Reverse Pec Deck",
+    muscle: "Shoulders (Rear Delts)",
+    type: "weight_reps",
+    aliases: [
+      "rear delt fly", "rear delt flyes", "reverse fly", "reverse flyes", "rear delt machine", "machine rear delt fly", "reverse peck deck"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "dumbbell-front-raise",
+    name: "Dumbbell Front Raise",
+    muscle: "Shoulders",
+    type: "weight_reps",
+    aliases: [
+      "front raise", "front raises", "db front raise", "db front raises", "dumbbell front raises"
+    ],
+    defaultIncrement: 2.5
+  },
+  {
+    id: "barbell-bicep-curl",
+    name: "Barbell Bicep Curl",
+    muscle: "Arms (Biceps)",
+    type: "weight_reps",
+    aliases: [
+      "barbell curl", "barbell curls", "bb curl", "bb curls", "straight bar curl", "ez bar curl", "ez bar curls"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "incline-dumbbell-curl",
+    name: "Incline Dumbbell Curl",
+    muscle: "Arms (Biceps)",
+    type: "weight_reps",
+    aliases: [
+      "incline db curl", "incline db curls", "incline dumbbell curls", "incline curl", "incline curls"
+    ],
+    defaultIncrement: 2.5
+  },
+  {
+    id: "cable-bicep-curl",
+    name: "Cable Bicep Curl",
+    muscle: "Arms (Biceps)",
+    type: "weight_reps",
+    aliases: [
+      "cable curl", "cable curls", "cable bicep curls"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "overhead-tricep-extension",
+    name: "Overhead Tricep Extension",
+    muscle: "Arms (Triceps)",
+    type: "weight_reps",
+    aliases: [
+      "overhead tricep extension", "cable overhead tricep extension", "rope overhead extension", "db overhead extension", "dumbbell tricep extension", "french press"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "close-grip-bench-press",
+    name: "Close-Grip Bench Press",
+    muscle: "Arms (Triceps)",
+    type: "weight_reps",
+    aliases: [
+      "close grip bench", "close grip bench press", "cgbp", "close grip barbell bench"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "cable-crunch",
+    name: "Cable Crunch",
+    muscle: "Core",
+    type: "weight_reps",
+    aliases: [
+      "cable crunches", "kneeling cable crunch", "rope crunch", "ab crunch machine"
+    ],
+    defaultIncrement: 5
+  },
+  {
+    id: "ab-wheel-rollout",
+    name: "Ab Wheel Rollout",
+    muscle: "Core",
+    type: "bodyweight",
+    aliases: [
+      "ab wheel", "ab rollout", "ab rollouts", "wheel rollout"
+    ],
+    defaultIncrement: 1
+  },
+  {
+    id: "stationary-bike",
+    name: "Stationary Bike",
+    muscle: "Cardio",
+    type: "distance_time",
+    aliases: [
+      "spin bike", "exercise bike", "cycling", "bike", "indoor cycling", "assault bike", "air bike"
+    ],
+    defaultIncrement: 1
+  },
+  {
+    id: "stairmaster",
+    name: "Stairmaster",
+    muscle: "Cardio",
+    type: "distance_time",
+    aliases: [
+      "stair master", "stepmill", "stairs", "stair climber"
+    ],
+    defaultIncrement: 1
   }
 ];
 

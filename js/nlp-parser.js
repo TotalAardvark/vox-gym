@@ -11,7 +11,10 @@ const SMALL_NUMBERS = {
   zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
   ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16,
   seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50,
-  sixty: 60, seventy: 70, eighty: 80, ninety: 90
+  sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+  // Pluralized tens commonly spoken for weights (e.g., "with twenties", "grabbed fifties")
+  twenties: 20, thirties: 30, forties: 40, fifties: 50,
+  sixties: 60, seventies: 70, eighties: 80, nineties: 90
 };
 
 const MAGNITUDES = {
@@ -338,6 +341,8 @@ function parseDropSet(text, userUnit, lastSet, customExercises = []) {
  * Check if command is Time or Distance based
  */
 function isTimeOrDistanceCommand(text) {
+  // If text contains "reps", it's a resistance/weight set, not a timed exercise (e.g. "50s for 10 reps")
+  if (/\b(?:reps?|times)\b/i.test(text)) return false;
   return /\b(plank|treadmill|rower|rowing machine|running|jogging|cycling|bike)\b/i.test(text) ||
          /\b(\d+\s*(?:sec|seconds?|mins?|minutes?|miles?|meters?|km|kilometers?))\b/i.test(text);
 }
@@ -496,15 +501,15 @@ function parseStandardSet(text, userUnit, lastSet, customExercises = []) {
   let reps = null;
 
   // Check Pattern B: reps first
-  const repsFirstMatch = text.match(/(\d+)\s*reps?\s*(?:at|with|for|@)?\s*(\d+(?:\.\d+)?)\s*(?:lbs?|pounds?|kg|kilos?)?/i);
+  const repsFirstMatch = text.match(/(\d+)\s*reps?\s*(?:at|with|for|@)?\s*(\d+(?:\.\d+)?)\s*s?\s*(?:lbs?|pounds?|kg|kilos?)?/i);
   if (repsFirstMatch) {
     reps = parseInt(repsFirstMatch[1], 10);
     weight = parseFloat(repsFirstMatch[2]);
   }
 
-  // Check Pattern A: weight first
+  // Check Pattern A: weight first (also supports pluralized weights e.g. "50s for 10 reps", "the 35s for 8")
   if (weight === null) {
-    const weightFirstMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:lbs?|pounds?|kg|kilos?)?\s*(?:for|at|x|\*)\s*(\d+)\s*(?:reps?)?/i);
+    const weightFirstMatch = text.match(/(?:with\s+(?:the\s+)?)?(\d+(?:\.\d+)?)\s*s?\s*(?:lbs?|pounds?|kg|kilos?)?\s*(?:for|at|x|\*)\s*(\d+)\s*(?:reps?)?/i);
     if (weightFirstMatch) {
       weight = parseFloat(weightFirstMatch[1]);
       reps = parseInt(weightFirstMatch[2], 10);
