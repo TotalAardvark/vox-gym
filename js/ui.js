@@ -34,7 +34,10 @@ export class UIController {
     this.setupConfirmRename();
     this.setupEditSetModal();
     this.setupExerciseLogModal();
+    this.setupDevToolsModal();
+    this.setupHistoryModal();
     this.renderHeader();
+    this.renderHeaderStreakPill();
     this.renderTodaySession();
     this.renderInitialFeedbackCard();
   }
@@ -131,6 +134,15 @@ export class UIController {
       resetDataBtn: document.getElementById("reset-data-btn"),
       settingsSpotifyStatus: document.getElementById("settings-spotify-status"),
       settingsSpotifyBtn: document.getElementById("settings-spotify-btn"),
+      devToolsSelect: document.getElementById("dev-tools-select"),
+      devToolsFileInput: document.getElementById("dev-tools-file-input"),
+      devToolsConfirmModal: document.getElementById("dev-tools-confirm-modal"),
+      devConfirmTitle: document.getElementById("dev-confirm-title"),
+      devConfirmCloseBtn: document.getElementById("dev-confirm-close-btn"),
+      devConfirmIconBox: document.getElementById("dev-confirm-icon-box"),
+      devConfirmDesc: document.getElementById("dev-confirm-desc"),
+      devConfirmCancelBtn: document.getElementById("dev-confirm-cancel-btn"),
+      devConfirmActionBtn: document.getElementById("dev-confirm-action-btn"),
 
       // Spotify Widget Elements
       spotifyWidgetContainer: document.getElementById("spotify-widget-container"),
@@ -176,6 +188,47 @@ export class UIController {
       customExerciseInput: document.getElementById("custom-exercise-input"),
       customExerciseSaveBtn: document.getElementById("custom-exercise-save-btn"),
       renameSuggestionsList: document.getElementById("rename-suggestions-list"),
+
+      // History & Progress Modal & Controls
+      headerStreakPill: document.getElementById("header-streak-pill"),
+      headerStreakText: document.getElementById("header-streak-text"),
+      drawerHistoryBtn: document.getElementById("drawer-history-btn"),
+      drawerViewHistoryBtn: document.getElementById("drawer-view-history-btn"),
+      historyModal: document.getElementById("history-modal"),
+      historyModalCloseBtn: document.getElementById("history-modal-close-btn"),
+      historyTab30d: document.getElementById("history-tab-30d"),
+      historyTabLifetime: document.getElementById("history-tab-lifetime"),
+      historyOverviewView: document.getElementById("history-overview-view"),
+      historyCalendarView: document.getElementById("history-calendar-view"),
+      historyPrsView: document.getElementById("history-prs-view"),
+      historyVolumeView: document.getElementById("history-volume-view"),
+      hpCardConsistency: document.getElementById("hp-card-consistency"),
+      hpCardStrength: document.getElementById("hp-card-strength"),
+      hpCardVolume: document.getElementById("hp-card-volume"),
+      hpConsistencyHeadline: document.getElementById("hp-consistency-headline"),
+      hpConsistencySub: document.getElementById("hp-consistency-sub"),
+      hpMiniCalendar: document.getElementById("hp-mini-calendar"),
+      hpStrengthHeadline: document.getElementById("hp-strength-headline"),
+      hpStrengthSub: document.getElementById("hp-strength-sub"),
+      hpStrengthPillRow: document.getElementById("hp-strength-pill-row"),
+      hpVolumeNum: document.getElementById("hp-volume-num"),
+      hpSetsNum: document.getElementById("hp-sets-num"),
+      hpVolumeMilestone: document.getElementById("hp-volume-milestone"),
+      hpSpotlightTitle: document.getElementById("hp-spotlight-title"),
+      hpSpotlightSub: document.getElementById("hp-spotlight-sub"),
+      hpSpotlightFill: document.getElementById("hp-spotlight-fill"),
+      historyBackFromCalendar: document.getElementById("history-back-from-calendar"),
+      historyBackFromPrs: document.getElementById("history-back-from-prs"),
+      historyBackFromVolume: document.getElementById("history-back-from-volume"),
+      calendarActiveDaysPill: document.getElementById("calendar-active-days-pill"),
+      calendarStreakPill: document.getElementById("calendar-streak-pill"),
+      historyCalendarGrid: document.getElementById("history-calendar-grid"),
+      historySessionsFeed: document.getElementById("history-sessions-feed"),
+      historyPrsList: document.getElementById("history-prs-list"),
+      volumeHeroIcon: document.getElementById("volume-hero-icon"),
+      volumeHeroNum: document.getElementById("volume-hero-num"),
+      volumeHeroDesc: document.getElementById("volume-hero-desc"),
+      historyVolumeBars: document.getElementById("history-volume-bars"),
 
       // Individual Exercise Log Modal
       exerciseLogModal: document.getElementById("exercise-log-modal"),
@@ -390,6 +443,8 @@ export class UIController {
     if (this.elements.totalSetsBadge) {
       this.elements.totalSetsBadge.textContent = `${sets.length} ${sets.length === 1 ? "Set" : "Sets"}`;
     }
+
+    this.renderHeaderStreakPill();
 
     let totalVolume = 0;
     for (const s of sets) {
@@ -1101,7 +1156,7 @@ export class UIController {
             id: "set_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6),
             timestamp: new Date().toISOString()
           };
-          storage.saveSet(duplicated);
+          storage.logSet(duplicated);
           this.closeEditSetModal();
           this.renderTodaySession();
           this.updateFeedbackCard(duplicated.exercise);
@@ -1677,6 +1732,745 @@ export class UIController {
       try { layer.releasePointerCapture(e.pointerId); } catch (_) {}
       handlePointerEnd();
     });
+  }
+
+  // =========================================================================
+  // 11. Dev Tools Modal & Action Execution
+  // =========================================================================
+  setupDevToolsModal() {
+    this.pendingDevAction = null;
+
+    if (this.elements.devConfirmCloseBtn) {
+      this.elements.devConfirmCloseBtn.addEventListener("click", () => this.closeDevToolsConfirmModal());
+    }
+    if (this.elements.devConfirmCancelBtn) {
+      this.elements.devConfirmCancelBtn.addEventListener("click", () => this.closeDevToolsConfirmModal());
+    }
+
+    if (this.elements.devConfirmActionBtn) {
+      this.elements.devConfirmActionBtn.addEventListener("click", () => {
+        const action = this.pendingDevAction;
+        this.closeDevToolsConfirmModal();
+        if (action) {
+          this.executeDevToolAction(action);
+        }
+      });
+    }
+
+    if (this.elements.devToolsSelect) {
+      this.elements.devToolsSelect.addEventListener("change", (e) => {
+        const action = e.target.value;
+        if (!action) return;
+        this.showDevToolsConfirmModal(action);
+      });
+    }
+
+    if (this.elements.devToolsFileInput) {
+      this.elements.devToolsFileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const raw = event.target.result;
+            storage.importWorkoutData(raw);
+            this.renderTodaySession();
+            this.renderHeader();
+            const last = storage.getLastLoggedSet();
+            if (last) {
+              this.updateFeedbackCard(last.exercise);
+            } else {
+              this.renderInitialFeedbackCard();
+            }
+            alert("Workout data imported successfully!");
+          } catch (err) {
+            console.error("Failed to import data", err);
+            alert("Import failed: " + (err.message || "Invalid file format"));
+          } finally {
+            e.target.value = "";
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+  }
+
+  showDevToolsConfirmModal(action) {
+    this.pendingDevAction = action;
+
+    const actionConfig = {
+      export: {
+        title: "Export Workout Data",
+        desc: "Download a full JSON backup of all recorded workout history, custom exercises, and user preferences.",
+        btnText: "Export JSON",
+        isDanger: false,
+        iconTheme: "icon-cyan",
+        iconSvg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>`
+      },
+      import: {
+        title: "Import Workout Data",
+        desc: "Restore workout history from a JSON file. This will replace or update existing workout logs.",
+        btnText: "Choose File",
+        isDanger: false,
+        iconTheme: "icon-green",
+        iconSvg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>`
+      },
+      clear: {
+        title: "Clear All Workout Data",
+        desc: "Permanently erase all logged workout sets and session history. This action cannot be undone.",
+        btnText: "Clear All Data",
+        isDanger: true,
+        iconTheme: "icon-red",
+        iconSvg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          <line x1="10" y1="11" x2="10" y2="17"></line>
+          <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>`
+      },
+      generate: {
+        title: "Generate Sample Data",
+        desc: "Populate a realistic 3-month profile: 15 exercises (Push, Pull, Legs) logged 3x/week with progressive overload to test volume curves and long-term charts.",
+        btnText: "Generate Data",
+        isDanger: false,
+        iconTheme: "icon-amber",
+        iconSvg: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>`
+      }
+    };
+
+    const cfg = actionConfig[action] || {
+      title: "Confirm Action",
+      desc: "Proceed with selected developer tool action?",
+      btnText: "Proceed",
+      isDanger: false,
+      iconTheme: "icon-green",
+      iconSvg: ""
+    };
+
+    if (this.elements.devConfirmTitle) this.elements.devConfirmTitle.textContent = cfg.title;
+    if (this.elements.devConfirmDesc) this.elements.devConfirmDesc.textContent = cfg.desc;
+    if (this.elements.devConfirmIconBox) {
+      this.elements.devConfirmIconBox.className = `dev-confirm-icon-box ${cfg.iconTheme}`;
+      this.elements.devConfirmIconBox.innerHTML = cfg.iconSvg;
+    }
+    if (this.elements.devConfirmActionBtn) {
+      this.elements.devConfirmActionBtn.textContent = cfg.btnText;
+      this.elements.devConfirmActionBtn.className = `btn-confirm-action dev-confirm-execute-btn ${cfg.isDanger ? "btn-danger" : ""}`;
+    }
+
+    if (this.elements.devToolsConfirmModal) {
+      this.elements.devToolsConfirmModal.classList.add("visible");
+    }
+    if (this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.add("visible");
+    }
+  }
+
+  closeDevToolsConfirmModal() {
+    this.pendingDevAction = null;
+    if (this.elements.devToolsSelect) {
+      this.elements.devToolsSelect.value = "";
+    }
+    if (this.elements.devToolsConfirmModal) {
+      this.elements.devToolsConfirmModal.classList.remove("visible");
+    }
+    // If settings modal is still open, keep backdrop
+    const settingsOpen = this.elements.settingsModal && this.elements.settingsModal.classList.contains("visible");
+    if (!settingsOpen && this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.remove("visible");
+    }
+  }
+
+  executeDevToolAction(action) {
+    switch (action) {
+      case "export": {
+        const jsonStr = storage.exportWorkoutData();
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const today = new Date().toISOString().split("T")[0];
+        a.href = url;
+        a.download = `vox-gym-backup-${today}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        break;
+      }
+      case "import": {
+        if (this.elements.devToolsFileInput) {
+          this.elements.devToolsFileInput.click();
+        }
+        break;
+      }
+      case "clear": {
+        storage.clearAllWorkoutData();
+        this.renderTodaySession();
+        this.renderInitialFeedbackCard();
+        this.renderHeader();
+        this.renderHeaderStreakPill();
+        break;
+      }
+      case "generate": {
+        storage.generateSampleWorkoutData();
+        this.renderTodaySession();
+        this.renderHeader();
+        this.renderHeaderStreakPill();
+        const last = storage.getLastLoggedSet();
+        if (last) {
+          this.updateFeedbackCard(last.exercise);
+        } else {
+          this.renderInitialFeedbackCard();
+        }
+        break;
+      }
+    }
+  }
+
+  // =========================================================================
+  // 12. History & Progress Modal Controller
+  // =========================================================================
+  setupHistoryModal() {
+    this.currentHistoryTimeframe = "30d";
+
+    // Header Streak Pill
+    if (this.elements.headerStreakPill) {
+      this.elements.headerStreakPill.addEventListener("click", () => {
+        this.openHistoryModal();
+      });
+    }
+
+    // Drawer entry points
+    if (this.elements.drawerHistoryBtn) {
+      this.elements.drawerHistoryBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.openHistoryModal();
+      });
+    }
+
+    if (this.elements.drawerViewHistoryBtn) {
+      this.elements.drawerViewHistoryBtn.addEventListener("click", () => {
+        this.openHistoryModal();
+      });
+    }
+
+    // Modal Close Button
+    if (this.elements.historyModalCloseBtn) {
+      this.elements.historyModalCloseBtn.addEventListener("click", () => {
+        this.closeHistoryModal();
+      });
+    }
+
+    // Segmented Tabs: 30 Days vs Lifetime
+    if (this.elements.historyTab30d) {
+      this.elements.historyTab30d.addEventListener("click", () => {
+        this.switchHistoryTab("30d");
+      });
+    }
+
+    if (this.elements.historyTabLifetime) {
+      this.elements.historyTabLifetime.addEventListener("click", () => {
+        this.switchHistoryTab("lifetime");
+      });
+    }
+
+    // Top Hero Cards Navigation to Sub-views
+    if (this.elements.hpCardConsistency) {
+      this.elements.hpCardConsistency.addEventListener("click", () => {
+        this.showHistorySubView("calendar");
+      });
+      this.elements.hpCardConsistency.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.showHistorySubView("calendar");
+        }
+      });
+    }
+
+    if (this.elements.hpCardStrength) {
+      this.elements.hpCardStrength.addEventListener("click", () => {
+        this.showHistorySubView("prs");
+      });
+      this.elements.hpCardStrength.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.showHistorySubView("prs");
+        }
+      });
+    }
+
+    if (this.elements.hpCardVolume) {
+      this.elements.hpCardVolume.addEventListener("click", () => {
+        this.showHistorySubView("volume");
+      });
+      this.elements.hpCardVolume.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.showHistorySubView("volume");
+        }
+      });
+    }
+
+    // Back Buttons inside Sub-views
+    if (this.elements.historyBackFromCalendar) {
+      this.elements.historyBackFromCalendar.addEventListener("click", () => {
+        this.showHistorySubView("overview");
+      });
+    }
+
+    if (this.elements.historyBackFromPrs) {
+      this.elements.historyBackFromPrs.addEventListener("click", () => {
+        this.showHistorySubView("overview");
+      });
+    }
+
+    if (this.elements.historyBackFromVolume) {
+      this.elements.historyBackFromVolume.addEventListener("click", () => {
+        this.showHistorySubView("overview");
+      });
+    }
+  }
+
+  renderHeaderStreakPill() {
+    if (!this.elements.headerStreakText) return;
+    const analytics = storage.getProgressAnalytics("30d");
+    const active = analytics.workoutDaysCount || 0;
+    this.elements.headerStreakText.textContent = `${active} / 30d`;
+
+    if (this.elements.headerStreakPill) {
+      this.elements.headerStreakPill.title = `${active} workout days in the last 30 days. Tap for History & Progress.`;
+    }
+  }
+
+  openHistoryModal(timeframe = "30d") {
+    this.currentHistoryTimeframe = timeframe;
+    this.showHistorySubView("overview");
+    this.updateHistoryContent();
+
+    if (this.elements.historyModal) {
+      this.elements.historyModal.classList.add("visible");
+    }
+    if (this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.add("visible");
+    }
+  }
+
+  closeHistoryModal() {
+    if (this.elements.historyModal) {
+      this.elements.historyModal.classList.remove("visible");
+    }
+    const settingsOpen = this.elements.settingsModal && this.elements.settingsModal.classList.contains("visible");
+    if (!settingsOpen && this.elements.modalBackdrop) {
+      this.elements.modalBackdrop.classList.remove("visible");
+    }
+  }
+
+  switchHistoryTab(timeframe) {
+    if (this.currentHistoryTimeframe === timeframe) return;
+    this.currentHistoryTimeframe = timeframe;
+
+    if (this.elements.historyTab30d) {
+      const is30 = timeframe === "30d";
+      this.elements.historyTab30d.classList.toggle("active", is30);
+      this.elements.historyTab30d.setAttribute("aria-selected", is30 ? "true" : "false");
+    }
+
+    if (this.elements.historyTabLifetime) {
+      const isLt = timeframe === "lifetime";
+      this.elements.historyTabLifetime.classList.toggle("active", isLt);
+      this.elements.historyTabLifetime.setAttribute("aria-selected", isLt ? "true" : "false");
+    }
+
+    this.updateHistoryContent();
+  }
+
+  showHistorySubView(viewName) {
+    const views = {
+      overview: this.elements.historyOverviewView,
+      calendar: this.elements.historyCalendarView,
+      prs: this.elements.historyPrsView,
+      volume: this.elements.historyVolumeView
+    };
+
+    Object.entries(views).forEach(([k, el]) => {
+      if (!el) return;
+      if (k === viewName) {
+        el.classList.add("active");
+      } else {
+        el.classList.remove("active");
+      }
+    });
+
+    // Scroll to top on view transition
+    const scrollBody = document.querySelector(".history-scroll-body");
+    if (scrollBody) {
+      scrollBody.scrollTop = 0;
+    }
+  }
+
+  updateHistoryContent() {
+    const analytics = storage.getProgressAnalytics(this.currentHistoryTimeframe);
+    this.renderHistoryOverview(analytics);
+    this.renderHistoryCalendarView(analytics);
+    this.renderHistoryPRsView(analytics);
+    this.renderHistoryVolumeView(analytics);
+  }
+
+  renderHistoryOverview(analytics) {
+    const is30d = this.currentHistoryTimeframe === "30d";
+    const rangeLabel = is30d ? "the last 30 days" : "your lifetime journey";
+
+    // Card 1: Consistency
+    if (this.elements.hpConsistencyHeadline) {
+      if (analytics.workoutDaysCount > 0) {
+        this.elements.hpConsistencyHeadline.textContent = `You showed up ${analytics.workoutDaysCount} of ${is30d ? 'the last 30' : analytics.totalDaysInRange} days!`;
+      } else {
+        this.elements.hpConsistencyHeadline.textContent = "Start your training streak today!";
+      }
+    }
+    if (this.elements.hpConsistencySub) {
+      if (analytics.currentStreakWeeks > 0) {
+        this.elements.hpConsistencySub.textContent = `🔥 ${analytics.currentStreakWeeks} week streak! Showing up is winning. Tap to view calendar.`;
+      } else {
+        this.elements.hpConsistencySub.textContent = `Showing up = Winning · Tap to view workout calendar & past sessions.`;
+      }
+    }
+
+    // Mini Calendar Dots (30 little dots)
+    if (this.elements.hpMiniCalendar) {
+      const now = new Date();
+      const dotsCount = 30;
+      let dotsHtml = "";
+      for (let i = dotsCount - 1; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 86400000);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        const key = `${yyyy}-${mm}-${dd}`;
+        const isActive = analytics.activeDates && analytics.activeDates.includes(key);
+        const isToday = i === 0;
+        dotsHtml += `<div class="hp-mini-dot ${isActive ? 'active' : ''} ${isToday ? 'today' : ''}" title="${key}${isActive ? ' (Workout logged)' : ''}"></div>`;
+      }
+      this.elements.hpMiniCalendar.innerHTML = dotsHtml;
+    }
+
+    // Card 2: Strength & PRs
+    if (this.elements.hpStrengthHeadline) {
+      const count = analytics.prsInTimeframe;
+      if (count > 0) {
+        this.elements.hpStrengthHeadline.textContent = `${count} Personal Record${count === 1 ? '' : 's'} ${is30d ? 'this period' : 'recorded'}!`;
+      } else {
+        this.elements.hpStrengthHeadline.textContent = "Log sets to unlock personal records!";
+      }
+    }
+
+    if (this.elements.hpStrengthSub) {
+      if (analytics.prHighlights && analytics.prHighlights.length > 0) {
+        const names = analytics.prHighlights.slice(0, 3).map(p => p.exercise).join(", ");
+        this.elements.hpStrengthSub.textContent = `${names} leading the progressive overload curve.`;
+      } else {
+        this.elements.hpStrengthSub.textContent = "Tap to explore exercise trophy case and progression charts.";
+      }
+    }
+
+    if (this.elements.hpStrengthPillRow) {
+      if (analytics.prHighlights && analytics.prHighlights.length > 0) {
+        this.elements.hpStrengthPillRow.innerHTML = analytics.prHighlights.slice(0, 3).map(p => `
+          <div class="hp-pr-chip">
+            <span class="hp-pr-chip-name">${p.exercise}</span>
+            <span class="hp-pr-chip-val">${p.bestWeight} lbs</span>
+            ${p.gain > 0 ? `<span class="hp-pr-chip-gain">+${p.gain}</span>` : ''}
+          </div>
+        `).join("");
+      } else {
+        this.elements.hpStrengthPillRow.innerHTML = `
+          <div class="hp-pr-chip">
+            <span class="hp-pr-chip-name">Trophy Case</span>
+            <span class="hp-pr-chip-val">Ready</span>
+          </div>
+        `;
+      }
+    }
+
+    // Card 3: Volume & Milestones
+    const prefs = storage.getPreferences();
+    const unit = prefs.unit || "lbs";
+    if (this.elements.hpVolumeNum) {
+      this.elements.hpVolumeNum.textContent = `${analytics.totalVolumeLbs.toLocaleString()} ${unit.toUpperCase()}`;
+    }
+    if (this.elements.hpSetsNum) {
+      this.elements.hpSetsNum.textContent = `across ${analytics.totalSetsCount.toLocaleString()} sets`;
+    }
+    if (this.elements.hpVolumeMilestone) {
+      this.elements.hpVolumeMilestone.textContent = analytics.milestoneEquivalent || "Keep moving iron!";
+    }
+
+    // Card 4: Spotlight
+    if (analytics.spotlight) {
+      if (this.elements.hpSpotlightTitle) {
+        this.elements.hpSpotlightTitle.textContent = analytics.spotlight.title;
+      }
+      if (this.elements.hpSpotlightSub) {
+        this.elements.hpSpotlightSub.textContent = analytics.spotlight.sub;
+      }
+      if (this.elements.hpSpotlightFill) {
+        this.elements.hpSpotlightFill.style.width = `${analytics.spotlight.progressPercent}%`;
+      }
+    }
+  }
+
+  renderHistoryCalendarView(analytics) {
+    if (this.elements.calendarActiveDaysPill) {
+      this.elements.calendarActiveDaysPill.textContent = `⚡ ${analytics.workoutDaysCount} Days Active`;
+    }
+    if (this.elements.calendarStreakPill) {
+      this.elements.calendarStreakPill.textContent = `🔥 ${analytics.currentStreakWeeks} Wk Streak`;
+    }
+
+    // Render Month Calendar Grid
+    if (this.elements.historyCalendarGrid) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth(); // 0-indexed
+
+      // Month name
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 is Sun
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayDate = now.getDate();
+
+      let gridHtml = `
+        <div class="calendar-grid-header">
+          <span class="calendar-month-title">${monthNames[month]} ${year}</span>
+        </div>
+        <div class="calendar-day-names">
+          <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+        </div>
+        <div class="calendar-cells-matrix">
+      `;
+
+      // Empty padding cells before 1st of month
+      for (let i = 0; i < firstDayOfMonth; i++) {
+        gridHtml += `<div class="calendar-cell empty"></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const mm = String(month + 1).padStart(2, "0");
+        const dd = String(d).padStart(2, "0");
+        const dateKey = `${year}-${mm}-${dd}`;
+        const hasWorkout = analytics.activeDates && analytics.activeDates.includes(dateKey);
+        const isToday = d === todayDate;
+
+        gridHtml += `
+          <div class="calendar-cell ${hasWorkout ? 'active' : ''} ${isToday ? 'today' : ''}" data-date="${dateKey}" title="${dateKey}${hasWorkout ? ' (Trained)' : ''}">
+            <span class="calendar-cell-num">${d}</span>
+            ${hasWorkout ? `<span class="calendar-cell-dot"></span>` : ''}
+          </div>
+        `;
+      }
+
+      gridHtml += `</div>`;
+      this.elements.historyCalendarGrid.innerHTML = gridHtml;
+
+      // Wire calendar cell click to jump/scroll to that date in past sessions feed
+      this.elements.historyCalendarGrid.querySelectorAll(".calendar-cell[data-date]").forEach(cell => {
+        cell.addEventListener("click", () => {
+          const targetDate = cell.getAttribute("data-date");
+          const targetCard = this.elements.historySessionsFeed?.querySelector(`[data-feed-date="${targetDate}"]`);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+            targetCard.classList.add("session-highlight");
+            setTimeout(() => targetCard.classList.remove("session-highlight"), 1800);
+          }
+        });
+      });
+    }
+
+    // Render Past Sessions Feed
+    if (this.elements.historySessionsFeed) {
+      const sessions = analytics.pastSessionsList || [];
+      if (sessions.length === 0) {
+        this.elements.historySessionsFeed.innerHTML = `
+          <div class="activity-empty-state" style="padding: 24px 0;">
+            <span class="activity-empty-text">No workouts in this period</span>
+            <span class="activity-empty-sub">Tap the microphone to start logging your gym sets</span>
+          </div>
+        `;
+        return;
+      }
+
+      const prefs = storage.getPreferences();
+      const unit = prefs.unit || "lbs";
+
+      this.elements.historySessionsFeed.innerHTML = sessions.map(sess => {
+        const exListStr = sess.exerciseNames.slice(0, 4).join(" · ") + (sess.exerciseNames.length > 4 ? "..." : "");
+        const setsHtml = sess.sets.map((s, idx) => {
+          const r = s.reps || 0;
+          let wStr = "";
+          if (s.type === "bodyweight" || s.isBodyweight) {
+            wStr = s.addedWeight > 0 ? `+${s.addedWeight} ${s.unit || unit}` : (s.weight > 0 ? `${s.weight} ${s.unit || unit}` : "BW");
+          } else {
+            const w = s.weight || s.addedWeight || 0;
+            wStr = `${w} ${s.unit || unit}`;
+          }
+          return `
+            <div class="feed-set-row">
+              <span class="feed-set-ex">${s.exercise}</span>
+              <span class="feed-set-data">${wStr} × ${r}</span>
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <div class="feed-session-card" data-feed-date="${sess.date}">
+            <div class="feed-session-header">
+              <div class="feed-session-info">
+                <span class="feed-session-date">${sess.formattedDate}</span>
+                <span class="feed-session-exercises">${exListStr}</span>
+              </div>
+              <div class="feed-session-tags">
+                <span class="feed-tag-sets">${sess.setCount} sets</span>
+                <span class="feed-tag-vol">${sess.volume.toLocaleString()} ${unit}</span>
+                <svg class="feed-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
+            </div>
+            <div class="feed-session-details">
+              <div class="feed-sets-list">
+                ${setsHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Accordion toggle for feed items
+      this.elements.historySessionsFeed.querySelectorAll(".feed-session-header").forEach(header => {
+        header.addEventListener("click", () => {
+          const card = header.closest(".feed-session-card");
+          if (card) {
+            card.classList.toggle("expanded");
+          }
+        });
+      });
+    }
+  }
+
+  renderHistoryPRsView(analytics) {
+    if (!this.elements.historyPrsList) return;
+
+    const prs = analytics.allPRs || [];
+    if (prs.length === 0) {
+      this.elements.historyPrsList.innerHTML = `
+        <div class="activity-empty-state" style="padding: 24px 0;">
+          <span class="activity-empty-text">No PR records yet</span>
+          <span class="activity-empty-sub">As you log sets, your highest weights will be cataloged here</span>
+        </div>
+      `;
+      return;
+    }
+
+    const prefs = storage.getPreferences();
+    const unit = prefs.unit || "lbs";
+
+    // Sort PRs alphabetically or by best weight
+    prs.sort((a, b) => (b.bestWeight || 0) - (a.bestWeight || 0));
+
+    this.elements.historyPrsList.innerHTML = prs.map(pr => {
+      return `
+        <div class="pr-card-item" data-exercise-name="${pr.exercise}">
+          <div class="pr-card-left">
+            <span class="pr-card-trophy">🏆</span>
+            <div class="pr-card-text">
+              <span class="pr-card-name">${pr.exercise}</span>
+              <span class="pr-card-date">${formatHumanDate(pr.bestDate)}</span>
+            </div>
+          </div>
+          <div class="pr-card-right">
+            <span class="pr-card-weight">${pr.bestWeight} ${unit}</span>
+            <span class="pr-card-cta">Graph →</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // Wire tap to open existing exercise log modal & dual-axis SVG progress graph
+    this.elements.historyPrsList.querySelectorAll(".pr-card-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const exName = item.getAttribute("data-exercise-name");
+        if (exName) {
+          this.openExerciseLogModal(exName);
+        }
+      });
+    });
+  }
+
+  renderHistoryVolumeView(analytics) {
+    const prefs = storage.getPreferences();
+    const unit = prefs.unit || "lbs";
+
+    if (this.elements.volumeHeroNum) {
+      this.elements.volumeHeroNum.textContent = `${analytics.totalVolumeLbs.toLocaleString()} ${unit.toUpperCase()}`;
+    }
+
+    if (this.elements.volumeHeroDesc) {
+      this.elements.volumeHeroDesc.textContent = analytics.milestoneEquivalent || "Keep lifting!";
+    }
+
+    if (this.elements.volumeHeroIcon) {
+      if (analytics.totalVolumeLbs > 1000000) {
+        this.elements.volumeHeroIcon.textContent = "🐋";
+      } else if (analytics.totalVolumeLbs > 200000) {
+        this.elements.volumeHeroIcon.textContent = "🚀";
+      } else if (analytics.totalVolumeLbs > 50000) {
+        this.elements.volumeHeroIcon.textContent = "🐘";
+      } else if (analytics.totalVolumeLbs > 10000) {
+        this.elements.volumeHeroIcon.textContent = "🚗";
+      } else {
+        this.elements.volumeHeroIcon.textContent = "⚡";
+      }
+    }
+
+    // Weekly Volume Bars Chart
+    if (this.elements.historyVolumeBars) {
+      const buckets = analytics.weeklyBuckets || {};
+      const weekKeys = Object.keys(buckets);
+
+      if (weekKeys.length === 0) {
+        this.elements.historyVolumeBars.innerHTML = `
+          <div class="activity-empty-state" style="padding: 24px 0;">
+            <span class="activity-empty-text">No volume data in this timeframe</span>
+          </div>
+        `;
+        return;
+      }
+
+      // Find max volume to scale bars
+      const maxVol = Math.max(...Object.values(buckets), 1);
+
+      this.elements.historyVolumeBars.innerHTML = weekKeys.map(k => {
+        const vol = buckets[k];
+        const pct = Math.min(100, Math.max(12, Math.round((vol / maxVol) * 100)));
+        return `
+          <div class="volume-bar-col" title="${k}: ${vol.toLocaleString()} ${unit}">
+            <span class="volume-bar-val">${vol > 999 ? (vol / 1000).toFixed(1) + 'k' : vol}</span>
+            <div class="volume-bar-track">
+              <div class="volume-bar-fill" style="height: ${pct}%;"></div>
+            </div>
+            <span class="volume-bar-label">${k}</span>
+          </div>
+        `;
+      }).join("");
+    }
   }
 }
 
