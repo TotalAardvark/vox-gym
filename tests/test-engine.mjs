@@ -116,6 +116,45 @@ assert(incReps.status === "incomplete" && incReps.missing === "reps", "Squats 22
 const incWeight = parseVoiceIntent("Bicep curls 12 reps", { userUnit: "lbs" });
 assert(incWeight.status === "incomplete" && incWeight.missing === "weight", "Bicep curls 12 reps triggers incomplete weight");
 
+console.log("\n=== 11. Testing Custom Exercise Prioritization & Ambiguity Resolution (BUG-002) ===");
+import { extractCustomExerciseCandidate } from '../js/nlp-parser.js';
+
+const customExercises = [
+  {
+    id: "custom-viking",
+    name: "Viking Press",
+    muscle: "Shoulders",
+    aliases: ["viking press"],
+    isCustom: true
+  },
+  {
+    id: "custom-bench",
+    name: "Machine Bench",
+    muscle: "Chest",
+    aliases: ["machine bench", "bench"],
+    isCustom: true
+  }
+];
+
+// Check prioritization over built-in database when collision or matching occurs
+const matchViking = matchExercise("Viking press 100 for 10", customExercises);
+assert(matchViking.bestMatch && matchViking.bestMatch.name === "Viking Press", "Custom Viking Press prioritized and matched");
+assert(matchViking.confidence >= 75 && !matchViking.isAmbiguous, "Custom exercise match is confident and not ambiguous");
+
+// Test alias collision: both custom Machine Bench and built-in Barbell Bench Press have alias "bench"
+const matchBench = matchExercise("bench 225 for 8", customExercises);
+assert(matchBench.bestMatch && matchBench.bestMatch.name === "Machine Bench", "Custom Machine Bench prioritized over built-in Barbell Bench Press on alias collision");
+
+// Test candidate extraction from unrecognized raw utterances
+const cand1 = extractCustomExerciseCandidate("Viking press 100 lbs for 10");
+assert(cand1 === "Viking Press", `Extract candidate: "Viking press 100 lbs for 10" -> "Viking Press" (got "${cand1}")`);
+
+const cand2 = extractCustomExerciseCandidate("Drop set on Kas glute bridge 135 for 10, 95 for 12");
+assert(cand2 === "Kas Glute Bridge", `Extract candidate: drop set on Kas glute bridge -> "Kas Glute Bridge" (got "${cand2}")`);
+
+const cand3 = extractCustomExerciseCandidate("Tibialis raise 25 for 15");
+assert(cand3 === "Tibialis Raise", `Extract candidate: "Tibialis raise 25 for 15" -> "Tibialis Raise" (got "${cand3}")`);
+
 console.log("\n=== Test Results Summary ===");
 console.log(`Total tests passed: ${passed}`);
 console.log(`Total tests failed: ${failed}`);

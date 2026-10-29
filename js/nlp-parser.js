@@ -584,3 +584,26 @@ function parseStandardSet(text, userUnit, lastSet, customExercises = []) {
     fuzzyResult: fuzzyRes
   };
 }
+
+/**
+ * Extract candidate exercise name from spoken utterance when not recognized
+ * Strips out numbers, units, reps, and workout keywords to isolate the movement name.
+ */
+export function extractCustomExerciseCandidate(rawTranscript) {
+  if (!rawTranscript) return "Custom Exercise";
+  let s = rawTranscript.trim();
+  // Strip drop set prefix
+  s = s.replace(/^(drop set on|drop set)\s*/i, "");
+  // Pattern: weight + reps
+  s = s.replace(/(\d+(?:\.\d+)?)\s*(?:lbs?|pounds?|kg|kilos?)?\s*(?:for|at|x|\*)\s*(\d+)\s*(?:reps?)?/i, "");
+  // Pattern: reps + weight
+  s = s.replace(/(\d+)\s*(?:sets?\s*(?:of\s*)?)?reps?\s*(?:at|with|for|@)?\s*(\d+(?:\.\d+)?)\s*(?:lbs?|pounds?|kg|kilos?)?/i, "");
+  // Strip sets / reps phrases like "3 sets of 8", "10 reps", "100 lbs"
+  s = s.replace(/\b\d+\s*sets?\s*(?:of\s*)?\d*\b/gi, "");
+  s = s.replace(/\b\d+(?:\.\d+)?\s*(?:lbs?|pounds?|kg|kilos?|reps?)\b/gi, "");
+  s = s.replace(/\b\d+\b/g, "");
+  s = s.replace(/\b(for|at|with|reps?|lbs?|pounds?|kg|kilos?|to failure|seconds?|mins?|minutes?|bodyweight)\b/gi, "");
+  s = s.replace(/[^\w\s-]/g, " ").replace(/\s+/g, " ").trim();
+  if (!s) return rawTranscript.trim();
+  return s.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+}

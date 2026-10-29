@@ -13,7 +13,7 @@ export class UIController {
     this.activeConfirmPayload = null;
     this.colorCrawlTimer = null;
     this.colorCrawlStartTime = null;
-    this.colorCrawlDuration = 2500; // 2.5 seconds
+    this.colorCrawlDuration = 3000; // 3 seconds
     this.isCrawlPaused = false;
     this.onConfirmCallback = null;
 
@@ -684,7 +684,7 @@ export class UIController {
         this.elements.colorCrawlBar.style.width = `${percent}%`;
       }
 
-      const remainingSec = Math.max(0, (2.5 - (elapsed / 1000))).toFixed(1);
+      const remainingSec = Math.max(0, (3.0 - (elapsed / 1000))).toFixed(1);
       if (this.elements.colorCrawlStatusText) {
         this.elements.colorCrawlStatusText.textContent = `Auto-confirming in ${remainingSec}s... (Touch to edit)`;
       }
@@ -739,7 +739,7 @@ export class UIController {
       this.elements.manualConfirmActions.style.display = "none";
     }
     if (this.elements.colorCrawlStatusText) {
-      this.elements.colorCrawlStatusText.textContent = "Auto-confirming in 2.5s...";
+      this.elements.colorCrawlStatusText.textContent = "Auto-confirming in 3.0s...";
     }
   }
 
@@ -778,15 +778,15 @@ export class UIController {
   }
 
   // =========================================================================
-  // 4. Ambiguity Bottom Drawer (PRD 3.2)
+  // 4. Ambiguity Bottom Drawer (PRD 3.2 & BUG-002)
   // =========================================================================
-  showAmbiguityDrawer(spokenTerm, topMatches, onSelect) {
+  showAmbiguityDrawer(spokenTerm, topMatches, onSelect, onRegisterCustom = null, customCandidateName = "") {
     if (this.elements.ambiguitySpokenTerm) {
       this.elements.ambiguitySpokenTerm.textContent = `"${spokenTerm}"`;
     }
 
     if (this.elements.ambiguityOptionsList) {
-      this.elements.ambiguityOptionsList.innerHTML = topMatches.map((m, idx) => `
+      let optionsHtml = topMatches.map((m, idx) => `
         <button class="ambiguity-option-btn" data-ex-name="${m.exercise.name}">
           <div class="ambiguity-option-left">
             <span class="ambiguity-rank">${idx + 1}</span>
@@ -801,13 +801,42 @@ export class UIController {
         </button>
       `).join("");
 
-      this.elements.ambiguityOptionsList.querySelectorAll(".ambiguity-option-btn").forEach(btn => {
+      // Add 1-tap "Register as Custom Exercise" option
+      if (onRegisterCustom) {
+        const displayName = customCandidateName || spokenTerm;
+        optionsHtml += `
+          <button id="ambiguity-register-custom-btn" class="ambiguity-option-btn ambiguity-register-custom-btn">
+            <div class="ambiguity-option-left">
+              <span class="ambiguity-register-icon">+</span>
+              <div class="ambiguity-text-group">
+                <span class="ambiguity-name" style="color: var(--accent-green);">Register as Custom Exercise</span>
+                <span class="ambiguity-sub">Save "${displayName}" as a custom exercise</span>
+              </div>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        `;
+      }
+
+      this.elements.ambiguityOptionsList.innerHTML = optionsHtml;
+
+      this.elements.ambiguityOptionsList.querySelectorAll(".ambiguity-option-btn:not(#ambiguity-register-custom-btn)").forEach(btn => {
         btn.addEventListener("click", () => {
           const exName = btn.getAttribute("data-ex-name");
           this.closeAmbiguityDrawer();
           if (onSelect) onSelect(exName);
         });
       });
+
+      const registerBtn = this.elements.ambiguityOptionsList.querySelector("#ambiguity-register-custom-btn");
+      if (registerBtn) {
+        registerBtn.addEventListener("click", () => {
+          this.closeAmbiguityDrawer();
+          if (onRegisterCustom) onRegisterCustom();
+        });
+      }
     }
 
     this.elements.ambiguityDrawer.classList.add("visible");

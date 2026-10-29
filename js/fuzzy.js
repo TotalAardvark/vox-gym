@@ -107,8 +107,9 @@ export function normalize(text) {
 }
 
 /**
- * Match spoken input against the exercise database and custom exercises
- * Evaluates both the official exercise names and registered aliases.
+ * Match spoken input against the exercise database and custom exercises.
+ * Prioritizes user-registered custom exercises first before checking the built-in database.
+ * Evaluates both official exercise names and registered aliases.
  *
  * @param {string} input - Spoken exercise string (e.g., "db fly", "incline db", "bench press")
  * @param {Array} [additionalExercises=[]] - Optional custom user exercises
@@ -125,47 +126,83 @@ export function matchExercise(input, additionalExercises = []) {
     };
   }
 
-  const scoredExercises = [];
-  const exerciseList = additionalExercises.length > 0 
-    ? [...EXERCISE_DATABASE, ...additionalExercises]
-    : EXERCISE_DATABASE;
-
-  for (const exercise of exerciseList) {
-    let highestScoreForExercise = 0;
+  function scoreSingleExercise(exercise, isCustom = false) {
+    let highestScore = 0;
     let matchedTerm = exercise.name;
 
     // Check main name
     const mainScore = stringSimilarity(cleanInput, exercise.name);
-    if (mainScore > highestScoreForExercise) {
-      highestScoreForExercise = mainScore;
+    if (mainScore > highestScore) {
+      highestScore = mainScore;
       matchedTerm = exercise.name;
     }
 
     // Check all known aliases
-    for (const alias of exercise.aliases) {
+    for (const alias of exercise.aliases || []) {
       const aliasScore = stringSimilarity(cleanInput, alias);
-      if (aliasScore > highestScoreForExercise) {
-        highestScoreForExercise = aliasScore;
+      if (aliasScore > highestScore) {
+        highestScore = aliasScore;
         matchedTerm = alias;
       }
 
       // Exact alias match gives 1.0 confidence
       if (cleanInput === normalize(alias)) {
-        highestScoreForExercise = 1.0;
+        highestScore = 1.0;
         matchedTerm = alias;
         break;
       }
     }
 
-    scoredExercises.push({
+    return {
       exercise,
-      score: highestScoreForExercise,
-      matchedTerm
-    });
+      score: highestScore,
+      matchedTerm,
+      isCustom: Boolean(isCustom || exercise.isCustom)
+    };
   }
 
-  // Sort by highest score descending
-  scoredExercises.sort((a, b) => b.score - a.score);
+  // 1. PRIORITIZE CUSTOM EXERCISES FIRST:
+  // If user-registered custom exercises exist, evaluate them first.
+  if (additionalExercises && additionalExercises.length > 0) {
+    const customScored = additionalExercises.map(ex => scoreSingleExercise(ex, true));
+    customScored.sort((a, b) => b.score - a.score);
+    const bestCustom = customScored[0];
+
+    // If a custom exercise strongly matches (>= 75% confidence), prioritize it immediately
+    if (bestCustom && bestCustom.score >= 0.75) {
+      const dbScored = EXERCISE_DATABASE.map(ex => scoreSingleExercise(ex, false));
+      const combined = [...customScored, ...dbScored];
+      combined.sort((a, b) => {
+        if (Math.abs(b.score - a.score) < 0.0001) {
+          if (a.isCustom && !b.isCustom) return -1;
+          if (!a.isCustom && b.isCustom) return 1;
+        }
+        return b.score - a.score;
+      });
+
+      return {
+        bestMatch: bestCustom.exercise,
+        confidence: Math.round(bestCustom.score * 100),
+        matches: combined.slice(0, 3),
+        isAmbiguous: false
+      };
+    }
+  }
+
+  // 2. Built-in database matching (with custom exercises combined if scores < 0.75)
+  const scoredExercises = [
+    ...(additionalExercises || []).map(ex => scoreSingleExercise(ex, true)),
+    ...EXERCISE_DATABASE.map(ex => scoreSingleExercise(ex, false))
+  ];
+
+  // Sort by highest score descending, breaking ties in favor of custom exercises
+  scoredExercises.sort((a, b) => {
+    if (Math.abs(b.score - a.score) < 0.0001) {
+      if (a.isCustom && !b.isCustom) return -1;
+      if (!a.isCustom && b.isCustom) return 1;
+    }
+    return b.score - a.score;
+  });
 
   const topMatches = scoredExercises.slice(0, 3);
   const best = topMatches[0];
@@ -182,7 +219,9 @@ export function matchExercise(input, additionalExercises = []) {
     topMatches[1].score >= 0.70 &&
     (best.score - topMatches[1].score) < 0.08
   ) {
-    isAmbiguous = true;
+    if (!best.isCustom) {
+      isAmbiguous = true;
+    }
   }
 
   return {

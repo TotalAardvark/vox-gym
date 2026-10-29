@@ -6,7 +6,7 @@
 import { storage } from './storage.js';
 import { ui } from './ui.js';
 import { speechEngine } from './speech.js';
-import { parseVoiceIntent } from './nlp-parser.js';
+import { parseVoiceIntent, extractCustomExerciseCandidate } from './nlp-parser.js';
 import { audioFeedback } from './audio-feedback.js';
 import { SpotifyService } from './spotify.js';
 
@@ -130,15 +130,37 @@ class VoxGymApp {
       return;
     }
 
-    // Case B: Ambiguous exercise name (< 80% confidence or close matches)
+    // Case B: Ambiguous exercise name (< 75% confidence or close matches)
     if (parseResult.status === "ambiguous" && parseResult.fuzzyResult) {
       ui.setPTTState("idle");
       const spoken = rawTranscript;
-      ui.showAmbiguityDrawer(spoken, parseResult.fuzzyResult.matches, (selectedExerciseName) => {
-        parseResult.exercise = selectedExerciseName;
-        parseResult.status = "ready";
-        this.openConfirmationStep(parseResult);
-      });
+      const customCandidate = extractCustomExerciseCandidate(rawTranscript);
+
+      ui.showAmbiguityDrawer(
+        spoken,
+        parseResult.fuzzyResult.matches,
+        (selectedExerciseName) => {
+          parseResult.exercise = selectedExerciseName;
+          parseResult.status = "ready";
+          this.openConfirmationStep(parseResult);
+        },
+        () => {
+          // 1-Tap "Register as Custom Exercise"
+          // Save to user profile and custom exercises list so TTS/audio engine checks it first going forward
+          storage.saveCustomExercise({
+            name: customCandidate,
+            muscle: "Custom Exercise",
+            category: "custom",
+            aliases: [customCandidate.toLowerCase()]
+          });
+
+          parseResult.exercise = customCandidate;
+          parseResult.status = "ready";
+          // Pull up standard confirmation countdown box allowing 3 seconds to check or edit name, weight, reps
+          this.openConfirmationStep(parseResult);
+        },
+        customCandidate
+      );
       return;
     }
 
