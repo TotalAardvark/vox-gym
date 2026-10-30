@@ -2000,24 +2000,6 @@ html:not([data-theme="dark"]) .dev-tools-select {
   box-shadow: 0 0 10px var(--accent-green-glow);
 }
 
-.drawer-history-btn {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  border-radius: var(--radius-full);
-  padding: 3px 8px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-}
-
-.drawer-history-btn:hover {
-  border-color: var(--border-highlight);
-}
-
 .drawer-history-footer {
   padding: 12px 14px 20px 14px;
   display: flex;
@@ -2027,22 +2009,30 @@ html:not([data-theme="dark"]) .dev-tools-select {
 .drawer-view-history-btn {
   width: 100%;
   height: 44px;
-  background: var(--bg-secondary);
+  background: rgba(0, 245, 155, 0.08);
   border: 1px solid var(--border-highlight);
   color: var(--text-primary);
   border-radius: var(--radius-md);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+}
+
+.drawer-history-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--accent-green);
+  filter: drop-shadow(0 0 6px var(--accent-green-glow));
 }
 
 .drawer-view-history-btn:hover,
 .drawer-view-history-btn:active {
-  background: var(--bg-tertiary);
-  box-shadow: 0 0 12px var(--accent-green-glow);
+  background: rgba(0, 245, 155, 0.16);
+  border-color: var(--accent-green);
+  box-shadow: 0 0 14px var(--accent-green-glow);
 }

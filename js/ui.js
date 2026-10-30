@@ -192,7 +192,6 @@ export class UIController {
       // History & Progress Modal & Controls
       headerStreakPill: document.getElementById("header-streak-pill"),
       headerStreakText: document.getElementById("header-streak-text"),
-      drawerHistoryBtn: document.getElementById("drawer-history-btn"),
       drawerViewHistoryBtn: document.getElementById("drawer-view-history-btn"),
       historyModal: document.getElementById("history-modal"),
       historyModalCloseBtn: document.getElementById("history-modal-close-btn"),
@@ -1950,14 +1949,7 @@ export class UIController {
       });
     }
 
-    // Drawer entry points
-    if (this.elements.drawerHistoryBtn) {
-      this.elements.drawerHistoryBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.openHistoryModal();
-      });
-    }
-
+    // Drawer bottom action button
     if (this.elements.drawerViewHistoryBtn) {
       this.elements.drawerViewHistoryBtn.addEventListener("click", () => {
         this.openHistoryModal();
